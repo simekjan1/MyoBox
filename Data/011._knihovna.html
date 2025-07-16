@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Správce audioknih</title>
+  <!-- Tailwind CSS pro jednoduché a responzivní stylování -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Základní styly pro vysoký kontrast a lepší čitelnost */
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #000;
+      color: #fff;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 5xl; /* Větší kontejner pro více obsahu */
+      margin: 0 auto;
+      padding: 2rem;
+      background-color: #1a1a1a;
+      border-radius: 0.75rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      color: #facc15;
+      font-size: 2.5rem;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    h2 {
+      color: #facc15;
+      font-size: 1.75rem;
+      font-weight: bold;
+      margin-top: 1.5rem;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid #555;
+      padding-bottom: 0.5rem;
+      display: flex; /* Pro zarovnání nadpisu s tlačítkem */
+      align-items: center;
+      justify-content: space-between; /* Oddělí nadpis od tlačítka */
+    }
+    h2 button { /* Styl pro tlačítko uvnitř H2 */
+      margin-left: 1rem;
+      padding: 0.5rem 1rem;
+      font-size: 0.9rem;
+      background-color: #4a4a4a;
+      color: #fff;
+    }
+    h2 button:hover {
+      background-color: #6a6a6a;
+    }
+
+    /* Styly pro tlačítka */
+    button {
+      padding: 0.75rem 1.5rem;
+      margin: 0.5rem;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 0.5rem;
+      transition: background-color 0.2s ease;
+      color: #000; /* Černý text tlačítek pro lepší kontrast */
+    }
+    .btn-primary { background-color: #4caf50; color: #fff;} /* Add (zelená) */
+    .btn-secondary { background-color: #facc15; } /* Edit (žlutá) */
+    .btn-danger { background-color: #f44336; color: #fff;} /* Remove (červená) */
+    .btn-export { background-color: #ff9800; } /* Export (oranžová) */
+    .btn-import { background-color: #ffc107; } /* Import (světle oranžová) */
+    .btn-toggle-form { background-color: #6200ea; color: #fff;} /* Toggle forms (fialová) */
+    .btn-filter { background-color: #03a9f4; color: #fff;} /* Filter (světle modrá) */
+    .btn-back { background-color: #4a4a4a; color: #fff;} /* Back to Dashboard (šedá) */
+    
+    button:hover { opacity: 0.9; }
+    button:focus { outline: 2px solid #facc15; outline-offset: 2px; }
+
+    /* Styly pro formuláře a inputy */
+    .form-section {
+      background-color: #222;
+      padding: 1.5rem;
+      border-radius: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+    input[type="text"],
+    input[type="date"],
+    input[type="time"],
+    input[type="number"],
+    textarea,
+    select {
+      padding: 0.75rem;
+      width: 100%;
+      margin-bottom: 1rem;
+      border-radius: 0.375rem;
+      border: 1px solid #555;
+      background-color: #333;
+      color: #e2e8f0; /* Světlý text v inputech */
+      box-sizing: border-box; /* Zahrne padding a border do šířky */
+    }
+    textarea { height: 120px; resize: vertical; } /* Povolí změnu velikosti */
+    label { margin-bottom: 0.5rem; display: block; color: #ccc; }
+    .hidden { display: none; } /* Pro skrývání prvků */
+
+    /* Styly pro tabulku */
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      background: #111;
+      color: #fff;
+      margin-top: 1.5rem;
+      border-radius: 0.5rem;
+      overflow: hidden; /* Aby se border-radius aplikoval na celou tabulku */
+    }
+    th, td {
+      border: 1px solid #333;
+      padding: 0.75rem;
+      text-align: left; /* Zarovnání textu vlevo pro lepší čitelnost */
+    }
+    th {
+      background: #222;
+      font-weight: bold;
+      color: #facc15;
+    }
+    tr:nth-child(even) { background-color: #1a1a1a; } /* Střídavé barvy řádků */
+    tr:hover { background-color: #2a2a2a; } /* Změna barvy při najetí */
+
+    /* Styly pro modální okna */
+    .modal {
+      background: #111;
+      border: 2px solid #facc15; /* Žlutý rámeček */
+      padding: 2rem;
+      border-radius: 10px;
+      color: #fff;
+      max-width: 90%;
+      max-height: 90%;
+      overflow-y: auto; /* Pro posouvání obsahu modalu */
+      display: none; /* Skryté ve výchozím stavu */
+      position: fixed; /* Aby se zobrazilo nad ostatním obsahem */
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1000; /* Zvýšený z-index */
+    }
+    .modal h3 {
+      color: #facc15;
+      margin-top: 0;
+      text-align: center;
+    }
+    .modal button {
+      margin-top: 1rem;
+      width: auto;
+      display: inline-block;
+    }
+    .modal-text {
+      color: #ccc;
+      margin-bottom: 1rem;
+    }
+    .modal-buttons {
+      text-align: right;
+    }
+
+    /* Vylepšení pro responzivitu tabulek */
+    .table-responsive {
+      overflow-x: auto; /* Povolí horizontální posouvání, pokud je tabulka příliš široká */
+      margin-bottom: 2rem;
+    }
+    @media (max-width: 768px) {
+      .table-responsive table {
+        min-width: 600px; /* Zajistí, že tabulka se nezmenší moc */
+      }
+    }
+
+    /* Styl pro tlačítko Zpět na Dashboard */
+    .back-to-dashboard-link {
+        display: block; /* Změněno z inline-block na block pro konzistenci */
+        width: fit-content; /* Aby zabíralo jen potřebnou šířku */
+        background-color: #4a4a4a;
+        color: #fff;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        text-decoration: none;
+        font-weight: bold;
+        margin-bottom: 1.5rem;
+        transition: background-color 0.2s ease;
+    }
+    .back-to-dashboard-link:hover {
+        background-color: #6a6a6a;
+    }
+    .back-to-dashboard-link:focus {
+        outline: 2px solid #facc15;
+        outline-offset: 2px;
+    }
+
+    /* Specifické styly pro detaily knihy */
+    .book-details {
+      background-color: #222;
+      margin-top: 0.5rem;
+      padding: 0.5rem;
+      border-radius: 5px;
+      text-align: left; /* Zarovnání textu vlevo */
+    }
+    .book-details .detail-entry {
+      margin-bottom: 0.5rem;
+      color: #e2e8f0;
+    }
+    .book-details button {
+      margin-top: 0.5rem;
+      margin-right: 0.5rem;
+      padding: 0.5rem 1rem;
+      font-size: 0.9rem;
+    }
+    /* Styly pro input typu file */
+    label.file-input-label {
+        display: inline-flex; /* Aby se chovalo jako tlačítko */
+        align-items: center;
+        justify-content: center;
+        padding: 0.75rem 1.5rem;
+        margin: 0.5rem;
+        border: none;
+        font-weight: bold;
+        cursor: pointer;
+        border-radius: 0.5rem;
+        transition: background-color 0.2s ease;
+        color: #000;
+        background-color: #ffc107; /* Import barva */
+    }
+    label.file-input-label:hover {
+        opacity: 0.9;
+    }
+    label.file-input-label input[type="file"] {
+        display: none; /* Skryje samotný input file */
+    }
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Odkaz zpět na Dashboard -->
+    <a href="../../../index.html" class="back-to-dashboard-link" aria-label="Zpět na hlavní dashboard JSM">← Zpět na Dashboard</a>
+
+    <h1>Správce audioknih</h1>
+
+    <!-- Globální Export/Import -->
+    <!-- ODSTRANĚNA TŘÍDA 'form-section', aby se tlačítka neschovávala -->
+    <div class="flex items-center justify-between mb-6" id="globalControls">
+      <button class="btn-export" onclick="exportBooks()">Exportovat JSON</button>
+      <label class="file-input-label"> <!-- Použita nová třída pro stylizovaný label -->
+        Importovat JSON:
+        <input type="file" onchange="importBooks(event)" accept=".json" aria-label="Vybrat soubor pro import dat"/>
+      </label>
+    </div>
+
+    <div id="addBookFormSection" class="form-section"> <!-- Přidáno ID pro toggleForm -->
+      <h2>Přidat knihu / audioknihu</h2>
+      <input type="text" id="title" placeholder="Název" aria-label="Název knihy" />
+      <input type="text" id="author" placeholder="Autor" aria-label="Autor knihy" />
+      <input type="text" id="narrator" placeholder="Interpret" aria-label="Interpret audioknihy" />
+      <button class="btn-primary" onclick="addBook()">Přidat</button>
+    </div>
+
+    <div class="filter">
+      <input type="text" id="filterInput" placeholder="Vyhledat podle názvu, autora nebo interpreta..." oninput="updateTable()" aria-label="Vyhledat knihy" />
+      <button class="btn-filter" onclick="clearFilter()">Zrušit filtr</button>
+    </div>
+
+    <div class="table-responsive"> <!-- Obaleno pro responzivitu -->
+      <table id="bookTable">
+        <thead>
+          <tr>
+            <th>Název</th>
+            <th>Autor</th>
+            <th>Interpret</th>
+            <th>Oblíbená</th>
+            <th>Akce</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <!-- Modální okno pro zprávy a potvrzení (sjednoceno s ostatními aplikacemi) -->
+    <div id="customMessageModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalMessageTitle" tabindex="-1">
+        <div class="modal-content">
+            <h3 id="modalMessageTitle" class="text-xl font-bold text-yellow-300 mb-4">Zpráva</h3>
+            <p id="modalMessage" class="text-gray-300 mb-4"></p>
+            <div class="modal-buttons text-right">
+                <button id="modalCancelButton" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md ml-2 hidden">Zrušit</button>
+                <button id="modalOkButton" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md">OK</button>
+            </div>
+        </div>
+    </div>
+
+  <script>
+    let books = [];
+    let lastFocusedElement = null; // Pro udržení fokusu pro přístupnost
+
+    // --- Custom modální okno (sjednoceno s ostatními aplikacemi) ---
+    function showCustomModal(message, title = 'Zpráva', onConfirm = null, showCancel = false) {
+        lastFocusedElement = document.activeElement; // Uložíme aktuálně fokusovaný prvek
+        
+        const modal = document.getElementById('customMessageModal');
+        document.getElementById('modalMessageTitle').textContent = title;
+        document.getElementById('modalMessage').innerHTML = message; // Použijeme innerHTML pro vložení HTML obsahu (např. formulářů)
+        modal.style.display = 'flex'; // Zobrazíme modal
+        
+        const okButton = document.getElementById('modalOkButton');
+        okButton.textContent = 'OK'; 
+        okButton.onclick = () => { 
+            closeCustomModal(); 
+            if (onConfirm) onConfirm(); 
+        };
+        
+        let cancelButton = document.getElementById('modalCancelButton');
+        if (cancelButton) { // Zkontrolujeme, zda tlačítko existuje
+            cancelButton.style.display = showCancel ? 'inline-block' : 'none';
+            cancelButton.onclick = closeCustomModal; // Zavře modal na Zrušit
+        }
+
+        modal.focus(); 
+        modal.setAttribute('aria-hidden', 'false');
+        document.addEventListener('keydown', handleModalKeyboard);
+    }
+
+    function closeCustomModal() {
+        document.getElementById('customMessageModal').style.display = 'none'; // Skryjeme modal
+        document.getElementById('customMessageModal').setAttribute('aria-hidden', 'true');
+        document.removeEventListener('keydown', handleModalKeyboard);
+        if (lastFocusedElement) {
+            lastFocusedElement.focus();
+        }
+    }
+
+    function handleModalKeyboard(event) {
+        if (event.key === 'Escape') {
+            closeCustomModal();
+        }
+    }
+
+    // --- Funkce pro přidání knihy ---
+    function addBook() {
+      const title = document.getElementById('title').value.trim();
+      const author = document.getElementById('author').value.trim();
+      const narrator = document.getElementById('narrator').value.trim();
+      if (!title && !author && !narrator) {
+        showCustomModal('Prosím, vyplňte alespoň jedno pole (Název, Autor, Interpret).', 'Chyba zadání');
+        return;
+      }
+      books.push({ title, author, narrator, favorite: false, annotation: '', note: '' });
+      document.getElementById('title').value = '';
+      document.getElementById('author').value = '';
+      document.getElementById('narrator').value = '';
+      updateTable();
+      showCustomModal('Kniha byla úspěšně přidána.', 'Kniha přidána');
+    }
+
+    // --- Funkce pro úpravu detailů knihy (název, autor, interpret) ---
+    function editDetails(index) {
+      const b = books[index];
+      const modalContent = `
+        <h3>Upravit audioknihu</h3>
+        <label for="editTitle">Název:</label>
+        <input id="editTitle" value="${b.title}" placeholder="Název" aria-label="Název knihy" />
+        <label for="editAuthor">Autor:</label>
+        <input id="editAuthor" value="${b.author}" placeholder="Autor" aria-label="Autor knihy" />
+        <label for="editNarrator">Interpret:</label>
+        <input id="editNarrator" value="${b.narrator}" placeholder="Interpret" aria-label="Interpret audioknihy" />
+      `;
+      showCustomModal(modalContent, 'Upravit audioknihu', () => submitEdit(index), true); // Přidán showCancel = true
+    }
+
+    function submitEdit(index) {
+      books[index].title = document.getElementById("editTitle").value;
+      books[index].author = document.getElementById("editAuthor").value;
+      books[index].narrator = document.getElementById("editNarrator").value;
+      closeCustomModal();
+      updateTable();
+      showCustomModal('Detaily audioknihy byly upraveny.', 'Úprava úspěšná');
+    }
+
+    // --- Funkce pro aktualizaci tabulky ---
+    function updateTable() {
+      const tbody = document.querySelector('#bookTable tbody');
+      tbody.innerHTML = '';
+      const filter = document.getElementById('filterInput').value.toLowerCase();
+
+      const filteredBooks = books.filter(b =>
+        [b.title, b.author, b.narrator].some(f => f.toLowerCase().includes(filter))
+      );
+
+      const sortedBooks = [...filteredBooks].sort((a, b) => {
+        const authorA = a.author.toLowerCase();
+        const authorB = b.author.toLowerCase();
+        if (authorA < authorB) return -1;
+        if (authorA > authorB) return 1;
+        return a.title.toLowerCase().localeCompare(b.title.toLowerCase());
+      });
+
+      sortedBooks.forEach((b, displayIndex) => { // Používáme displayIndex pro zobrazení
+        const originalIndex = books.indexOf(b); // Získáme původní index z `books` pole
+        
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><button class="text-left" onclick="toggleDetails(${originalIndex})">${b.title || 'Bez názvu'}</button></td>
+          <td>${b.author}</td>
+          <td>${b.narrator}</td>
+          <td><input type="checkbox" ${b.favorite ? 'checked' : ''} onchange="toggleFavorite(${originalIndex})" aria-label="Označit jako oblíbenou" /></td>
+          <td>
+            <button class="btn-secondary" onclick="editDetails(${originalIndex})">Upravit</button>
+            <button class="btn-danger" onclick="confirmAndDeleteItem(${originalIndex})">Smazat</button>
+            <button class="btn-export" onclick="exportBookToTxt(${originalIndex})">Export TXT</button>
+          </td>`;
+        tbody.appendChild(row);
+
+        const detailRow = document.createElement('tr');
+        detailRow.className = 'hidden';
+        detailRow.id = `details-${originalIndex}`;
+        detailRow.innerHTML = `<td colspan="5"><div class="book-details">
+          <div class="detail-entry"><strong>Anotace:</strong> ${b.annotation ? b.annotation.replace(/\n/g, '<br>') : '---'}</div>
+          <div class="detail-entry"><strong>Poznámka:</strong> ${b.note ? b.note.replace(/\n/g, '<br>') : '---'}</div>
+          <button class="btn-secondary" onclick="addAnnotation(${originalIndex})">Přidat/Upravit anotaci</button>
+          <button class="btn-secondary" onclick="addNote(${originalIndex})">Přidat/Upravit poznámku</button>
+        </div></td>`;
+        tbody.appendChild(detailRow);
+      });
+    }
+
+    // --- Funkce pro přepínání oblíbených ---
+    function toggleFavorite(index) {
+      books[index].favorite = !books[index].favorite;
+      updateTable();
+    }
+
+    // --- Funkce pro přepínání detailů knihy ---
+    function toggleDetails(index) {
+      const row = document.getElementById(`details-${index}`);
+      if (row) row.classList.toggle('hidden');
+    }
+
+    // --- Funkce pro přidání/úpravu anotace ---
+    function addAnnotation(index) {
+      const b = books[index];
+      const modalContent = `
+        <h3>Anotace</h3>
+        <textarea id="annotationText" rows="5" class="w-full p-2 rounded-md bg-gray-700 text-white border border-gray-600" placeholder="Sem napište anotaci...">${b.annotation}</textarea>
+      `;
+      showCustomModal(modalContent, 'Anotace', () => submitAnnotation(index), true);
+    }
+
+    function submitAnnotation(index) {
+      books[index].annotation = document.getElementById("annotationText").value;
+      closeCustomModal();
+      updateTable();
+      showCustomModal('Anotace byla uložena.', 'Uloženo');
+    }
+
+    // --- Funkce pro přidání/úpravu poznámky ---
+    function addNote(index) {
+      const b = books[index];
+      const modalContent = `
+        <h3>Poznámka</h3>
+        <textarea id="noteText" rows="5" class="w-full p-2 rounded-md bg-gray-700 text-white border border-gray-600" placeholder="Sem napište poznámku...">${b.note}</textarea>
+      `;
+      showCustomModal(modalContent, 'Poznámka', () => submitNote(index), true);
+    }
+
+    function submitNote(index) {
+      books[index].note = document.getElementById("noteText").value;
+      closeCustomModal();
+      updateTable();
+      showCustomModal('Poznámka byla uložena.', 'Uloženo');
+    }
+
+    // --- Funkce pro smazání knihy s potvrzením ---
+    function deleteBook(index) {
+      confirmAndDeleteItem(index); // Voláme potvrzovací modal
+    }
+
+    function confirmAndDeleteItem(index) {
+        showCustomModal('Opravdu chcete odstranit tuto knihu?', 'Potvrdit smazání', () => {
+            books.splice(index, 1);
+            updateTable();
+            showCustomModal('Kniha byla smazána.', 'Smazáno');
+        }, true); // showCancel = true pro potvrzovací modal
+    }
+
+    // --- Funkce pro export/import dat ---
+    function exportBooks() {
+      try {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(books, null, 2));
+        const dl = document.createElement('a');
+        dl.setAttribute("href", dataStr);
+        dl.setAttribute("download", "audioknihy.json");
+        dl.click();
+        showCustomModal('Data audioknih byla úspěšně exportována jako JSON.', 'Export úspěšný');
+      } catch (error) {
+        console.error("Chyba při exportu JSON dat:", error);
+        showCustomModal('Nastala chyba při exportu dat. Zkuste to prosím znovu.', 'Chyba exportu');
+      }
+    }
+
+    function importBooks(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        try {
+          const importedData = JSON.parse(e.target.result);
+          // Základní validace importovaných dat
+          if (Array.isArray(importedData) && importedData.every(item => typeof item === 'object' && 'title' in item && 'author' in item && 'narrator' in item)) {
+            books = importedData;
+            updateTable();
+            showCustomModal('Data audioknih byla úspěšně importována!', 'Import úspěšný');
+          } else {
+            showCustomModal('Chyba: Importovaný soubor nemá očekávaný formát pro audioknihy.', 'Chyba importu');
+          }
+        } catch (error) {
+          console.error("Chyba při importu JSON souboru:", error);
+          showCustomModal('Chyba při čtení JSON souboru: ' + error.message, 'Chyba importu');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    // --- Funkce pro export jednotlivé knihy do TXT ---
+    function exportBookToTxt(index) {
+      const b = books[index];
+      if (!b) {
+        showCustomModal('Kniha pro export nebyla nalezena.', 'Chyba exportu');
+        return;
+      }
+      let content = `--- Audiokniha ---\n`;
+      content += `Název: ${b.title || 'Nezadáno'}\nAutor: ${b.author || 'Nezadáno'}\nInterpret: ${b.narrator || 'Nezadáno'}\nOblíbená: ${b.favorite ? 'Ano' : 'Ne'}\n\n`;
+      content += `--- Anotace ---\n${b.annotation || '---'}\n\n`;
+      content += `--- Poznámka ---\n${b.note || '---'}\n`;
+      
+      const fileName = `${(b.title || 'bez_nazvu').replace(/[^a-z0-9]/gi, '_').toLowerCase()}_detaily.txt`; // Bezpečný název souboru
+      const dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(content);
+      
+      const dl = document.createElement('a');
+      dl.setAttribute("href", dataStr);
+      dl.setAttribute("download", fileName);
+      dl.click();
+      showCustomModal(`Detaily knihy "${b.title}" byly exportovány do souboru "${fileName}".`, 'Export TXT úspěšný');
+    }
+
+    // --- Funkce pro vyčištění filtru ---
+    function clearFilter() {
+      document.getElementById('filterInput').value = '';
+      updateTable();
+    }
+
+    // --- Inicializace aplikace po načtení DOM ---
+    document.addEventListener('DOMContentLoaded', () => {
+      // Připojíme event listenery pro modální okno
+      document.getElementById('modalOkButton').addEventListener('click', closeCustomModal);
+      const modalCancelButton = document.getElementById('modalCancelButton');
+      if (modalCancelButton) {
+          modalCancelButton.addEventListener('click', closeCustomModal);
+      }
+      document.getElementById('customMessageModal').addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') closeCustomModal();
+      });
+
+      updateTable(); // Počáteční zobrazení tabulky
+    });
+  </script>
+</body>
+</html>

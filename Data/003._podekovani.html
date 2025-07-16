@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyoBox - Poděkování</title>
+    <!-- Tailwind CSS CDN - pro základní styly a responzivitu -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Inter pro moderní a čitelný font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Vlastní styly pro konzistentní vzhled MyoBoxu s ozdobným šmrncem */
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%); /* Jemný gradient pozadí */
+            color: #e2e8f0; /* Světlý text */
+            padding: 2rem;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+            overflow-x: hidden; /* Zabrání horizontálnímu scrollu */
+        }
+        .content-wrapper {
+            max-width: 800px; /* Omezení šířky pro lepší čitelnost */
+            background-color: rgba(45, 55, 72, 0.95); /* Mírně průhledné pozadí */
+            border-radius: 1.5rem; /* Zaoblené rohy */
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5); /* Výraznější stín */
+            padding: 3rem; /* Větší padding */
+            text-align: left; /* Zarovnání textu na střed */
+            width: 95%; /* Responzivní šířka */
+            border: 1px solid rgba(74, 85, 104, 0.5); /* Jemný okraj */
+            animation: fadeInScale 1s ease-out forwards; /* Animace při načtení */
+        }
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        h1 {
+            font-size: 3.2rem; /* Větší nadpis */
+            font-weight: 700;
+            color: #fbd38d; /* Zlatavá barva pro nadpis */
+            margin-bottom: 2rem;
+            text-align: center;
+            text-shadow: 0 0 20px rgba(251, 211, 141, 0.7); /* Zářivější stín */
+        }
+        h2 {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #9f7aea; /* Fialová */
+            margin-top: 2.5rem;
+            margin-bottom: 1.2rem;
+            text-align: center;
+        }
+        p {
+            margin-bottom: 1.2rem;
+            font-size: 1.1rem;
+            color: #cbd5e0;
+            text-align: center; /* Zarovnání odstavců na střed */
+        }
+        a {
+            color: #81e6d9; /* Světlejší azurová pro odkazy */
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        a:hover {
+            color: #4fd1c5; /* Tmavší azurová při najetí */
+            text-decoration: underline;
+        }
+        .email-link {
+            font-weight: bold;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 3rem; /* Větší mezera nahoře */
+            padding: 0.8rem 1.8rem;
+            background-color: #4c51bf;
+            color: #ffffff;
+            border-radius: 0.75rem;
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: 500;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+        }
+        .back-link:hover {
+            background-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+        }
+        .back-link:focus {
+            outline: 3px solid #81e6d9;
+            outline-offset: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="content-wrapper">
+        <h1>Děkujeme, že jste součástí MyoBoxu!</h1>
+        
+        <p>Vítejte v sekci poděkování, která je věnována vám – všem, kteří projevili zájem o MyoBox, a především těm, kterým tento nástroj již nyní usnadňuje každodenní práci a život. Vaše podpora a případné zapojení jsou pro mě nesmírně cenné a motivují mě k dalšímu rozvoji.</p>
+        
+        <p>MyoBox vznikl jako vize komplexního a přístupného systému, který by spojoval potřeby masérů, osobní agendu a volnočasové aktivity pod jednou střechou. Cesta od prvních nápadů k funkčnímu celku byla plná výzev a radosti z tvorby, na které se podílela i umělá inteligence. Jsem hrdý na to, co se nám podařilo vytvořit, a věřím, že MyoBox má potenciál stát se skutečným pomocníkem.</p>
+        
+        <p>Naše plány do budoucna jsou jasné: neustále MyoBox vylepšovat, přidávat nové funkce a zajišťovat jeho maximální stabilitu a přístupnost. Rádi bychom také vybudovali aktivní komunitu uživatelů, kteří se budou podílet na jeho dalším směřování – ať už hlášením chyb, návrhy na vylepšení, nebo sdílením vlastních nápadů.</p>
+        
+        <p>Děkuji vám za váš čas, zájem a důvěru. MyoBox je projekt tvořený s vášní a pro lidi, a s vaší pomocí může růst a sloužit ještě lépe.</p>
+        
+        <p>S úctou a vděčností,</p>
+        
+        <h2>Jan Šimek</h2>
+        <p>Tvůrce MyoBoxu</p>
+
+        <a href="../../../index.html" class="back-link">Zpět na Dashboard</a>
+    </div>
+</body>
+</html>

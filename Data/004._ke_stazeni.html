@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyoBox - Ke stažení</title>
+    <!-- Tailwind CSS CDN - pro základní styly a responzivitu -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Inter pro moderní a čitelný font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Vlastní styly pro konzistentní vzhled MyoBoxu */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a202c; /* Tmavé pozadí */
+            color: #e2e8f0; /* Světlý text */
+            padding: 2rem;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column; /* Pro vertikální uspořádání */
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+        }
+        .content-wrapper {
+            max-width: 800px; /* Omezení šířky pro lepší čitelnost */
+            background-color: #2d3748; /* Tmavší šedá pro obsah */
+            border-radius: 1.5rem; /* Zaoblené rohy */
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+            padding: 2.5rem;
+            text-align: center; /* Zarovnání textu na střed */
+            width: 95%; /* Responzivní šířka */
+        }
+        h1 {
+            font-size: 2.8rem; /* Větší nadpis */
+            font-weight: 700;
+            color: #63b3ed; /* Světle modrá */
+            margin-bottom: 1.5rem;
+            text-shadow: 0 0 15px rgba(99, 179, 237, 0.6);
+        }
+        p {
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+            color: #cbd5e0;
+        }
+        .button { /* Obecný styl pro tlačítka */
+            display: inline-block;
+            padding: 1.25rem 2.5rem;
+            font-size: 1.8rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 1rem;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            margin: 1rem 0.5rem; /* Mezera mezi tlačítky a nahoře/dole */
+        }
+        .button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+        .button:focus {
+            outline: 3px solid #81e6d9; /* Azurový focus outline */
+            outline-offset: 3px;
+        }
+
+        .download-button {
+            background-color: #4CAF50; /* Zelená barva */
+            color: white;
+        }
+        .download-button:hover {
+            background-color: #45a049; /* Tmavší zelená při najetí */
+        }
+
+        .github-button {
+            background-color: #6c757d; /* Šedá barva pro GitHub */
+            color: white;
+        }
+        .github-button:hover {
+            background-color: #5a6268; /* Tmavší šedá při najetí */
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 2.5rem;
+            padding: 0.75rem 1.5rem;
+            background-color: #4c51bf;
+            color: #ffffff;
+            border-radius: 0.75rem;
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: 500;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+        }
+        .back-link:hover {
+            background-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+        }
+        .back-link:focus {
+            outline: 3px solid #81e6d9;
+            outline-offset: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="content-wrapper">
+        <h1>MyoBox - Ke stažení</h1>
+        
+        <p>Vítejte v sekci pro stažení MyoBoxu. Zde si budete moci stáhnout kompletní balíček aplikací pro vaši masérnu, osobní účely a volný čas.</p>
+        <p>Prozatím je MyoBox ve vývoji a tato sekce bude brzy aktualizována o odkazy ke stažení nejnovější verze.</p>
+        
+        <div> <!-- Kontejner pro tlačítka -->
+            <a href="#" class="button download-button" aria-label="Tlačítko pro stažení MyoBoxu">Stáhnout MyoBox</a>
+            <a href="#" class="button github-button" aria-label="Tlačítko pro GitHub repozitář MyoBoxu">GitHub Repozitář</a>
+        </div>
+
+        <a href="../../../index.html" class="back-link">Zpět na Dashboard</a>
+    </div>
+</body>
+</html>

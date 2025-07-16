@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyoBox - Váš komplexní nástroj</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Vlastní styly pro vysoký kontrast a lepší čitelnost */
+        body {
+            background-color: #000;
+            font-family: 'Inter', sans-serif;
+            color: #fff;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden; /* Zabrání horizontálnímu scrollu */
+        }
+        .container {
+            max-width: 4xl;
+            margin: 0 auto;
+            padding: 2rem;
+            background-color: #1a1a1a;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 95%; /* Responzivní šířka */
+        }
+        h1 {
+            color: #facc15;
+            font-size: 4rem; /* Výrazně zvětšený nadpis JSM */
+            font-weight: 900; /* Extra tučné */
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .subtitle {
+            font-size: 1.5rem;
+            color: #cbd5e0;
+            margin-bottom: 2rem;
+        }
+        .navigation-info {
+            font-size: 1rem;
+            color: #a0aec0;
+            margin-bottom: 2.5rem;
+        }
+
+        /* Styly pro novou oznamovací sekci (nyní uvnitř details) */
+        .announcement-details { /* Nová třída pro details */
+            background-color: #2c3748;
+            padding: 1.5rem; /* Upraveno, aby padding byl uvnitř details */
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            margin-bottom: 2.5rem;
+            text-align: left;
+            border: 1px solid #4a5568;
+            transition: all 0.3s ease; /* Pro plynulou animaci rozbalení */
+        }
+        .announcement-details[open] {
+            background-color: #3a475a; /* Mírně světlejší, když je rozbaleno */
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+        }
+
+        .announcement-details summary { /* Styl pro summary */
+            font-size: 1.8rem; /* Větší písmo pro nadpis summary */
+            font-weight: 700;
+            color: #facc15; /* Žlutá pro nadpisy oznámení */
+            cursor: pointer;
+            outline: none;
+            padding: 0.5rem 0; /* Menší padding uvnitř summary */
+            display: flex;
+            align-items: center;
+            justify-content: center; /* Centrování textu summary */
+            text-shadow: 0 0 10px rgba(250, 204, 21, 0.5);
+        }
+        .announcement-details summary:focus {
+            outline: 3px solid #63b3ed; /* Modrý focus outline */
+            outline-offset: 3px;
+        }
+        .announcement-details summary::before {
+            content: "▶"; /* Šipka pro rozbalení */
+            display: inline-block;
+            margin-right: 0.75rem;
+            transition: transform 0.2s ease;
+            color: #90cdf4;
+            font-size: 0.9em;
+        }
+        .announcement-details[open] summary::before {
+            transform: rotate(90deg);
+        }
+
+        .announcement-details h3 { /* Podnadpisy uvnitř oznámení */
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #90cdf4; /* Světle modrá pro podnadpisy oznámení */
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            text-align: left; /* Zarovnání podnadpisů doleva */
+        }
+        .announcement-details p {
+            font-size: 1.1rem;
+            color: #cbd5e0;
+            margin-bottom: 1rem;
+            text-align: left;
+        }
+        .announcement-details ul {
+            list-style-type: disc;
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+            color: #cbd5e0;
+        }
+        .announcement-details ul ul { /* Vnořené seznamy */
+            list-style-type: circle;
+            margin-left: 1.5rem;
+        }
+        .announcement-details li {
+            margin-bottom: 0.5rem;
+        }
+        .announcement-details strong {
+            color: #e2e8f0;
+        }
+
+
+        .columns-container {
+            display: grid;
+            grid-template-columns: repeat(1, 1fr); /* Jedno sloupec na mobilu */
+            gap: 1.5rem;
+            opacity: 0; /* Pro animaci */
+            transform: translateY(50px); /* Pro animaci */
+            transition: opacity 1s ease-out, transform 1s ease-out;
+        }
+
+        @media (min-width: 768px) { /* Dva sloupce na tabletu */
+            .columns-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 1024px) { /* Čtyři sloupce na desktopu */
+            .columns-container {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        .columns-container.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .column {
+            background-color: #2c3748; /* Tmavší šedá pro sloupce */
+            padding: 1.5rem;
+            border-radius: 1rem; /* Zaoblené rohy */
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            border: 1px solid #4a5568; /* Jemný okraj */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .column:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .column-title {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: #9f7aea; /* Fialová */
+            margin-bottom: 1.25rem;
+            text-shadow: 0 0 10px rgba(159, 122, 234, 0.5);
+        }
+
+        .app-link {
+            display: block;
+            width: 100%;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.75rem;
+            background-color: #4c51bf; /* Tmavě modrá pro odkazy */
+            color: #ffffff;
+            border-radius: 0.75rem;
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: 500;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        .app-link:last-child {
+            margin-bottom: 0;
+        }
+
+        .app-link:hover {
+            background-color: #667eea; /* Světlejší modrá při najetí */
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .app-link:focus {
+            outline: 3px solid #81e6d9; /* Azurový focus outline */
+            outline-offset: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 id="main-title">MyoBox</h1>
+        <p class="subtitle">Komplexní nástroj pro vaši masérnu, osobní účely a volný čas.</p>
+        <p class="navigation-info">V prostoru se můžete pohybovat šipkami (nahoru/dolů/doleva/doprava) nebo klávesou Tab. Pro skok po nadpisech sloupců použijte klávesu (H).</p>
+
+        <details class="announcement-details"> <!-- Odebrán 'open' atribut -->
+            <summary aria-label="Rozbalovací pole: Oznámení o vydání MyoBoxu">Oznámení o vydání MyoBoxu</summary>
+            <p>Vážení přátelé,</p>
+            <p>s radostí vám oznamuji, že MyoBox je hotový a připravený k použití. Chtěl bych vás však upozornit na několik důležitých bodů.</p>
+            
+            <h3>Prosba o spolupráci</h3>
+            <p>Ačkoliv je MyoBox funkční, rozhodně není dokonalý. Proto vás srdečně prosím:</p>
+            <ul class="list-disc list-inside">
+                <li>Testujte aplikaci v různých scénářích</li>
+                <li>Nahlašujte chyby a nedostatky, na které narazíte</li>
+                <li>Sdílejte své návrhy na vylepšení</li>
+                <li>Poskytujte konstruktivní kritiku</li>
+            </ul>
+            <p>Každý váš nápad, připomínka nebo zpětná vazba je pro mě velmi cenná. Jako začínající programátor jsem se snažil udělat vše co nejlépe, ale vím, že se některé chyby nebo nedostatky v kódu mohou vyskytnout. Tento projekt jsem vytvořil společně s AI a vložili jsme do něj maximum úsilí.</p>
+            
+            <h3>Budoucí vývoj</h3>
+            <p>Vývoj MyoBoxu bude pokračovat i nadále, protože mi na něm velmi záleží. Během používání můžete očekávat:</p>
+            <ul class="list-disc list-inside">
+                <li>Opravy chyb na základě vašich hlášení</li>
+                <li>Drobná vylepšení funkcionalit</li>
+                <li>Minimální zásahy do základní funkčnosti</li>
+            </ul>
+            
+            <h3>Doporučení pro používání</h3>
+            <p>MyoBox je dostupný ve dvou verzích:</p>
+            <ul class="list-disc list-inside">
+                <li><strong>Webová verze</strong>
+                    <ul class="list-circle list-inside ml-4">
+                        <li>K dispozici přímo na webu</li>
+                        <li>Probíhá zde aktivní vývoj</li>
+                        <li>Častější změny a aktualizace</li>
+                    </ul>
+                </li>
+                <li><strong>Lokální verze (doporučená)</strong>
+                    <ul class="list-circle list-inside ml-4">
+                        <li>Stáhněte si aplikaci pro místní použití</li>
+                        <li>Stabilnější prostředí bez častých změn</li>
+                        <li>Pohodlnější používání bez závislosti na internetovém připojení</li>
+                    </ul>
+                </li>
+            </ul>
+            <p>Pro klidnou a bezproblémovou práci doporučuji používat lokální verzi.</p>
+            <p>Děkuji vám za pozornost a přeji mnoho úspěchů při používání a testování MyoBoxu. Díky vaší podpoře a zpětné vazbě může tento projekt růst a zlepšovat se.</p>
+        </details>
+
+        <div class="columns-container" id="columns-container">
+            <!-- Pracovní prostor -->
+            <div class="column">
+                <h2 class="column-title" id="prace-title">💼 Pracovní prostor</h2>
+                <a href="Data/006._maserna.html" class="app-link">Masérna</a>
+                <a href="Data/007._financni-spravce.html" class="app-link">Finanční správce</a>
+                <a href="Data/008._pracovni_zaznamnik.html" class="app-link">Centrální záznamník (Pracovní)</a>
+                <a href="Data/009._generator.html" class="app-link">Generátor poukazů a QR kódů</a>
+            </div>
+
+            <!-- Osobní prostor -->
+            <div class="column">
+                <h2 class="column-title" id="osobni-title">🏠 Osobní prostor</h2>
+                <a href="Data/010._finance.html" class="app-link">Správa osobních financí</a>
+                <a href="Data/011._knihovna.html" class="app-link">Knihovna</a>
+                <a href="Data/012._osobni_zaznamnik.html" class="app-link">Osobní záznamník</a>
+                <a href="Data/013._kalkulacka.html" class="app-link">Kalkulačka</a>
+                <a href="Data/014._casovac.html" class="app-link">Časovač</a>
+            </div>
+
+            <!-- Herní zóna -->
+            <div class="column">
+                <h2 class="column-title" id="hry-title">🎮 Herní zóna</h2>
+                <a href="Data/015._osmismerky.html" class="app-link">Osmisměrky</a>
+                <a href="Data/016._2048-blind.html" class="app-link">2048 pro zrakově postižené</a>
+                <a href="Data/017._blackjack-blind.html" class="app-link">Blackjack pro zrakově handicapované</a>
+                <a href="Data/018._prsi.html" class="app-link">Hra Prší</a>
+            </div>
+
+            <!-- Dokumentace -->
+            <div class="column">
+                <h2 class="column-title" id="dokumentace-title">📚 Dokumentace</h2>
+                <a href="Data/001._dokumentace.html" class="app-link">Kompletní dokumentace MyoBoxu</a>
+                <a href="Data/002._tutorialy.html" class="app-link">Tutoriály (již brzy!)</a>
+                <a href="Data/003._podekovani.html" class="app-link">Poděkování</a>
+                <a href="Data/004._ke_stazeni.html" class="app-link">Ke stažení</a>
+                <a href="Data/005._rozvoj_myo.html" class="app-link">Rozvoj MyoBoxu</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audio element pro přehrávání uvítacího zvuku -->
+    <audio id="welcomeAudio" preload="auto">
+        <source src="privitani.mp3" type="audio/mpeg"> 
+    </audio>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const columnsContainer = document.getElementById('columns-container');
+            const columnTitles = document.querySelectorAll('.column-title');
+            const appLinks = document.querySelectorAll('.app-link');
+            const welcomeAudio = document.getElementById('welcomeAudio');
+            let currentFocusIndex = -1;
+
+            // Funkce pro spuštění zvuku po uživatelské interakci
+            function playWelcomeAudio() {
+                welcomeAudio.play().catch(e => {
+                    console.error("Chyba při přehrávání zvuku:", e);
+                    // Zde by se dalo zobrazit tlačítko "Spustit zvuk" jako fallback
+                });
+                // Odebereme listenery po prvním spuštění, aby se nevolaly opakovaně
+                document.removeEventListener('click', playWelcomeAudio);
+                document.removeEventListener('keydown', playWelcomeAudio);
+            }
+
+            // Přidáme listenery pro spuštění zvuku na první interakci
+            document.addEventListener('click', playWelcomeAudio);
+            document.addEventListener('keydown', playWelcomeAudio);
+
+            // Přidáme event listener pro kliknutí na summary oznámení
+            document.querySelector('.announcement-details summary').addEventListener('click', () => {
+                // Pokud je oznámení sbalené a uživatel na něj klikne, přesuneme fokus dovnitř
+                const detailsElement = document.querySelector('.announcement-details');
+                if (detailsElement && !detailsElement.open) { // Kontrolujeme, zda se bude otevírat
+                    setTimeout(() => { // Malé zpoždění, aby se element stihl rozbalit
+                        detailsElement.querySelector('p')?.focus(); // Fokus na první odstavec uvnitř
+                    }, 100);
+                }
+            });
+
+
+            setTimeout(() => {
+                columnsContainer.classList.add('show');
+                // Nastavení fokusu na první odkaz po animaci
+                setTimeout(() => {
+                    if (appLinks.length > 0) {
+                        setFocus(0);
+                    }
+                }, 1000); // Zpoždění pro nastavení fokusu po animaci sloupců
+            }, 500); // Krátké zpoždění pro zajištění zobrazení před animací
+
+
+            // Funkce pro nastavení fokusu
+            function setFocus(index) {
+                if (index >= 0 && index < appLinks.length) {
+                    appLinks[index].focus();
+                    currentFocusIndex = index;
+                }
+            }
+
+            // Navigace šipkami
+            document.addEventListener('keydown', (e) => {
+                // Přesměrování fokusu na oznámení, pokud je stisknuto 'O'
+                if (e.key === 'o' || e.key === 'O') {
+                    e.preventDefault();
+                    document.querySelector('.announcement-details summary').focus();
+                    return;
+                }
+
+                if (e.key === 'ArrowRight' || e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                    e.preventDefault(); // Zabrání výchozímu chování prohlížeče (scroll)
+
+                    // Pokud je fokus uvnitř oznámení, šipky by měly navigovat tam
+                    const focusedElement = document.activeElement;
+                    const announcementDetails = document.querySelector('.announcement-details');
+                    if (announcementDetails.contains(focusedElement) && announcementDetails.open) {
+                        // Získat všechny fokusovatelné elementy uvnitř announcement-details
+                        const focusableElementsInAnnouncement = Array.from(announcementDetails.querySelectorAll('p, h3, ul, strong, a, li, summary'))
+                            .filter(el => {
+                                // Zkontrolujeme, zda je element skutečně fokusovatelný (např. má tabindex nebo je interaktivní)
+                                const computedStyle = window.getComputedStyle(el);
+                                return (el.tabIndex >= 0 || 
+                                        el.tagName === 'A' || 
+                                        el.tagName === 'BUTTON' || 
+                                        el.tagName === 'INPUT' || 
+                                        el.tagName === 'SELECT' || 
+                                        el.tagName === 'TEXTAREA' ||
+                                        el.tagName === 'SUMMARY') &&
+                                        computedStyle.display !== 'none' && 
+                                        computedStyle.visibility !== 'hidden';
+                            });
+                        
+                        const currentFocusableIndex = focusableElementsInAnnouncement.indexOf(focusedElement);
+
+                        let nextFocusableIndex = -1;
+
+                        if (e.key === 'ArrowDown') {
+                            nextFocusableIndex = (currentFocusableIndex + 1);
+                        } else if (e.key === 'ArrowUp') {
+                            nextFocusableIndex = (currentFocusableIndex - 1);
+                        }
+
+                        if (nextFocusableIndex >= 0 && nextFocusableIndex < focusableElementsInAnnouncement.length) {
+                            focusableElementsInAnnouncement[nextFocusableIndex].focus();
+                            return; // Zpracováno, nejdeme dál
+                        } else if (e.key === 'ArrowDown' && nextFocusableIndex >= focusableElementsInAnnouncement.length) {
+                            // Pokud jsme na konci oznámení a jdeme dolů, přesuneme fokus na první app link
+                            if (appLinks.length > 0) {
+                                setFocus(0);
+                                return;
+                            }
+                        } else if (e.key === 'ArrowUp' && nextFocusableIndex < 0) {
+                            // Pokud jsme na začátku oznámení a jdeme nahoru, přesuneme fokus na navigation-info
+                            document.querySelector('.navigation-info').focus();
+                            return;
+                        }
+                    }
+
+
+                    // Původní logika navigace mezi app links
+                    if (currentFocusIndex === -1 && appLinks.length > 0) {
+                        setFocus(0);
+                        return;
+                    }
+
+                    let nextIndex = currentFocusIndex;
+                    const columns = document.querySelectorAll('.column');
+                    const linksPerColumn = [];
+                    columns.forEach(col => linksPerColumn.push(col.querySelectorAll('.app-link').length));
+
+                    let currentColumnIndex = -1;
+                    let linkCountBeforeCurrentColumn = 0;
+                    for (let i = 0; i < linksPerColumn.length; i++) {
+                        if (currentFocusIndex < linkCountBeforeCurrentColumn + linksPerColumn[i]) {
+                            currentColumnIndex = i;
+                            break;
+                        }
+                        linkCountBeforeCurrentColumn += linksPerColumn[i];
+                    }
+
+                    const linksInCurrentColumn = columns[currentColumnIndex].querySelectorAll('.app-link');
+                    const currentLinkInColumnIndex = currentFocusIndex - linkCountBeforeCurrentColumn;
+
+
+                    if (e.key === 'ArrowRight') {
+                        nextIndex = (currentFocusIndex + 1) % appLinks.length;
+                    } else if (e.key === 'ArrowLeft') {
+                        nextIndex = (currentFocusIndex - 1 + appLinks.length) % appLinks.length;
+                    } else if (e.key === 'ArrowDown') {
+                        // Pohyb dolů v rámci sloupce nebo na další sloupec
+                        if (currentLinkInColumnIndex < linksInCurrentColumn.length - 1) {
+                            nextIndex = currentFocusIndex + 1;
+                        } else {
+                            // Přejít na další sloupec, pokud existuje
+                            let nextColIndex = (currentColumnIndex + 1) % columns.length;
+                            nextIndex = linkCountBeforeCurrentColumn + linksInCurrentColumn.length; // Začátek dalšího sloupce
+                            for (let i = 0; i < nextColIndex; i++) {
+                                nextIndex += linksPerColumn[i];
+                            }
+                            nextIndex = linkCountBeforeCurrentColumn + linksInCurrentColumn.length; // Začátek dalšího sloupce
+                            while (nextColIndex !== currentColumnIndex && nextIndex >= appLinks.length) {
+                                nextColIndex = (nextColIndex + 1) % columns.length;
+                                nextIndex = 0;
+                                for (let i = 0; i < nextColIndex; i++) {
+                                    nextIndex += linksPerColumn[i];
+                                }
+                                nextIndex += linksPerColumn[prevColIndex] - 1;
+                            }
+                        }
+                    } else if (e.key === 'ArrowUp') {
+                        // Pohyb nahoru v rámci sloupce nebo na předchozí sloupec
+                        if (currentLinkInColumnIndex > 0) {
+                            nextIndex = currentFocusIndex - 1;
+                        } else {
+                            // Přejít na předchozí sloupec
+                            let prevColIndex = (currentColumnIndex - 1 + columns.length) % columns.length;
+                            nextIndex = 0;
+                            for (let i = 0; i < prevColIndex; i++) {
+                                nextIndex += linksPerColumn[i];
+                            }
+                            nextIndex += linksPerColumn[prevColIndex] - 1; // Konec předchozího sloupce
+                            while (prevColIndex !== currentColumnIndex && nextIndex < 0) {
+                                prevColIndex = (prevColIndex - 1 + columns.length) % columns.length;
+                                nextIndex = 0;
+                                for (let i = 0; i < prevColIndex; i++) {
+                                    nextIndex += linksPerColumn[i];
+                                }
+                                nextIndex += linksPerColumn[prevColIndex] - 1;
+                            }
+                        }
+                    }
+                    setFocus(nextIndex);
+                } else if (e.key === 'h' || e.key === 'H') {
+                    e.preventDefault();
+                    // Přepínání fokusu mezi nadpisy sloupců
+                    let currentHeaderIndex = -1;
+                    columnTitles.forEach((title, index) => {
+                        if (document.activeElement === title) {
+                            currentHeaderIndex = index;
+                        }
+                    });
+                    const nextHeaderIndex = (currentHeaderIndex + 1) % columnTitles.length;
+                    columnTitles[nextHeaderIndex].focus();
+                }
+            });
+
+            // Aktualizace currentFocusIndex při použití Tab
+            appLinks.forEach((link, index) => {
+                link.addEventListener('focus', () => {
+                    currentFocusIndex = index;
+                });
+            });
+        });
+    </script>
+</body>
+</html>

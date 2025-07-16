@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Přístupná kalkulačka</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Základní styly pro tělo stránky */
+        body {
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column; /* Změněno na column pro umístění tlačítka Zpět */
+            justify-content: flex-start; /* Zarovnání nahoru */
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 1rem;
+            box-sizing: border-box;
+            transition: background-color 0.5s ease, color 0.5s ease; /* Plynulý přechod pro změnu motivu */
+        }
+
+        /* Tmavý motiv (výchozí) */
+        body.dark-theme {
+            background-color: #000; /* Černé pozadí pro nejvyšší kontrast */
+            color: #fff; /* Bílý text */
+        }
+        body.dark-theme .wrapper {
+            background-color: #1a1a1a; /* Tmavší pozadí pro kontejner */
+        }
+        body.dark-theme #result {
+            background-color: #000; /* Černé pozadí pro displej */
+            color: #fff; /* Bílý text na displeji */
+            border: 2px solid #555; /* Viditelné ohraničení */
+        }
+        body.dark-theme .calculator-button {
+            background-color: #333; /* Tmavé pozadí tlačítek */
+            color: #fff; /* Bílý text tlačítek */
+            border: 2px solid #555; /* Viditelné ohraničení */
+        }
+        body.dark-theme .calculator-button:hover {
+            background-color: #555;
+        }
+        body.dark-theme .operator-button {
+            background-color: #6a5acd; /* Fialová pro operátory */
+            border: 2px solid #8a2be2; /* Fialové ohraničení */
+        }
+        body.dark-theme .operator-button:hover {
+            background-color: #5a4ac0;
+        }
+
+        /* Světlý motiv */
+        body.light-theme {
+            background-color: rgb(7, 210, 199); /* Světlé pozadí */
+            color: rgb(87, 87, 87); /* Tmavší text */
+        }
+        body.light-theme .wrapper {
+            background-color: #f0f0f0; /* Světlejší pozadí pro kontejner */
+        }
+        body.light-theme #result {
+            background-color: #fff;
+            color: rgb(87, 87, 87);
+            border: 2px solid #ccc; /* Světlejší ohraničení */
+        }
+        body.light-theme .calculator-button {
+            background-color: #fff;
+            color: rgb(122, 122, 122);
+            border: 2px solid #ccc; /* Světlejší ohraničení */
+        }
+        body.light-theme .calculator-button:hover {
+            background-color: rgb(37, 35, 59);
+            color: #fff;
+        }
+        body.light-theme .operator-button {
+            background-color: #a08aff; /* Světlejší fialová pro operátory */
+            border: 2px solid #8a6be2; /* Fialové ohraničení */
+        }
+        body.light-theme .operator-button:hover {
+            background-color: #8a6be2;
+        }
+        body.light-theme #clear-button {
+            background-color: #dc3545; /* Červená pro C */
+            color: white;
+            border: 2px solid #c82333; /* Červené ohraničení */
+        }
+        body.light-theme #clear-button:hover {
+            background-color: #c82333;
+        }
+        body.light-theme #equals-button {
+            background-color: #28a745; /* Zelená pro = */
+            color: white;
+            border: 2px solid #218838; /* Zelené ohraničení */
+        }
+        body.light-theme #equals-button:hover {
+            background-color: #218838;
+        }
+
+
+        /* Společné styly pro prvky kalkulačky */
+        .wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+            padding: 2rem; /* Větší padding */
+            max-width: 450px; /* Větší šířka */
+            width: 100%;
+            transition: background-color 0.5s ease; /* Plynulý přechod pro wrapper */
+        }
+
+        h1 {
+            font-size: 2.5rem; /* Větší nadpis */
+            font-weight: 700;
+            color: #4caf50; /* Zelená barva pro nadpis */
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+
+        .top-buttons {
+            display: flex;
+            align-items: center;
+        }
+
+        .theme-button {
+            background-color: #6a5acd; /* Fialová */
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 45px; /* Větší tlačítko motivu */
+            height: 45px; /* Větší tlačítko motivu */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            margin-left: 10px;
+            flex-shrink: 0; /* Zabrání zmenšení tlačítka */
+        }
+
+        .theme-button:hover {
+            background-color: #5a4ac0;
+            transform: translateY(-2px);
+        }
+        .theme-button:active {
+            transform: translateY(0);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        #theme-icon {
+            width: 25px; /* Větší ikona motivu */
+            height: 25px; /* Větší ikona motivu */
+        }
+
+        .calculator-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(6, 1fr); /* Změněno na 6 řádků pro nové rozložení */
+            gap: 12px; /* Větší mezery mezi tlačítky */
+            width: 100%;
+        }
+
+        #result {
+            grid-column: 1 / span 4; /* Zabere všechny 4 sloupce */
+            grid-row: 1 / 2; /* První řádek */
+            border-radius: 8px;
+            padding: 1.5rem 1.2rem; /* Větší padding */
+            font-size: 3rem; /* Ještě větší písmo pro výsledek */
+            text-align: right;
+            margin-bottom: 10px;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.4);
+            outline: none;
+            height: 90px; /* Větší výška */
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease; /* Plynulý přechod */
+        }
+
+        .calculator-button {
+            border-radius: 10px; /* Více zaoblené rohy */
+            padding: 1.5rem; /* Větší padding */
+            font-size: 2.2rem; /* Větší písmo tlačítek */
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 80px; /* Větší výška tlačítek */
+            outline: none;
+        }
+
+        .calculator-button:hover {
+            transform: translateY(-2px);
+        }
+        .calculator-button:active {
+            transform: translateY(0);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .calculator-button:focus {
+            outline: 4px solid #8a2be2; /* Fialový rámeček pro fokus */
+            outline-offset: -4px;
+        }
+
+        /* Specifické barvy pro tlačítka C a = (nemění se s motivem) */
+        #clear-button {
+            background-color: #dc3545; /* Červená pro C */
+            color: white;
+            border: 2px solid #c82333; /* Červené ohraničení */
+        }
+        #clear-button:hover {
+            background-color: #c82333;
+        }
+        
+        #equals-button {
+            background-color: #28a745; /* Zelená pro = */
+            color: white;
+            border: 2px solid #218838; /* Zelené ohraničení */
+        }
+        #equals-button:hover {
+            background-color: #218838;
+        }
+
+        /* Skrytá oblast pro čtečku obrazovky */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+
+        /* Styl pro tlačítko Zpět na Dashboard */
+        .back-to-dashboard-link {
+            display: block; /* Aby zabíralo celou šířku a bylo na samostatném řádku */
+            width: fit-content; /* Aby se šířka přizpůsobila obsahu */
+            background-color: #4a4a4a;
+            color: #fff;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            font-weight: bold;
+            margin-bottom: 1.5rem; /* Mezera pod tlačítkem */
+            transition: background-color 0.2s ease;
+        }
+        .back-to-dashboard-link:hover {
+            background-color: #6a6a6a;
+        }
+        .back-to-dashboard-link:focus {
+            outline: 2px solid #facc15;
+            outline-offset: 2px;
+        }
+
+        /* Responsivní úpravy */
+        @media (max-width: 480px) {
+            .wrapper {
+                padding: 1rem;
+            }
+            h1 {
+                font-size: 2rem; /* Menší nadpis na mobilu */
+                margin-bottom: 1rem;
+            }
+            #result {
+                font-size: 2.2rem; /* Menší písmo výsledku na mobilu */
+                height: 80px;
+            }
+            .calculator-button {
+                font-size: 1.8rem; /* Menší písmo tlačítek na mobilu */
+                height: 70px;
+                padding: 1rem;
+            }
+            .theme-button {
+                width: 40px;
+                height: 40px;
+            }
+            #theme-icon {
+                width: 20px;
+                height: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Odkaz zpět na Dashboard -->
+    <a href="../../../index.html" class="back-to-dashboard-link" aria-label="Zpět na hlavní dashboard JSM">← Zpět na Dashboard</a>
+
+    <div class="wrapper">
+        <div class="header-container">
+            <h1 id="toast" aria-live="polite" aria-atomic="true">Kalkulačka</h1>
+            <div class="top-buttons">
+                <button type="button" onclick="changeTheme()" class="theme-button" aria-label="Přepnout motiv">
+                    <img src="https://placehold.co/25x25/ffffff/000000?text=☀️" alt="Ikona motivu" height="25" width="25" id="theme-icon">
+                </button>
+            </div>
+        </div>
+        
+        <input type="text" name="result" id="result" placeholder="Výsledek" readonly aria-live="assertive" aria-atomic="true" aria-label="Aktuální výsledek">
+
+        <div class="calculator-grid" role="grid" aria-label="Kalkulačka">
+            <!-- Row 1: %, CE, C, / -->
+            <button type="button" value="%" onclick="liveScreen('%', 'procenta')" class="calculator-button operator-button" aria-label="Operátor procenta">%</button>
+            <button type="button" value="CE" onclick="clearLastEntry()" class="calculator-button operator-button" aria-label="Vymazat poslední vstup">CE</button>
+            <button type="button" onclick="clearResult()" id="clear-button" class="calculator-button" aria-label="Vymazat vše">C</button>
+            <button type="button" value="/" onclick="liveScreen('/', 'děleno')" class="calculator-button operator-button" aria-label="Operátor děleno">/</button>
+
+            <!-- Row 2: 7, 8, 9, x -->
+            <button type="button" value="7" onclick="liveScreen('7', 'sedm')" class="calculator-button" aria-label="Číslo sedm">7</button>
+            <button type="button" value="8" onclick="liveScreen('8', 'osm')" class="calculator-button" aria-label="Číslo osm">8</button>
+            <button type="button" value="9" onclick="liveScreen('9', 'devět')" class="calculator-button" aria-label="Číslo devět">9</button>
+            <button type="button" value="x" onclick="liveScreen('*', 'krát')" class="calculator-button operator-button" aria-label="Operátor krát">x</button>
+
+            <!-- Row 3: 4, 5, 6, - -->
+            <button type="button" value="4" onclick="liveScreen('4', 'čtyři')" class="calculator-button" aria-label="Číslo čtyři">4</button>
+            <button type="button" value="5" onclick="liveScreen('5', 'pět')" class="calculator-button" aria-label="Číslo pět">5</button>
+            <button type="button" value="6" onclick="liveScreen('6', 'šest')" class="calculator-button" aria-label="Číslo šest">6</button>
+            <button type="button" value="-" onclick="liveScreen('-', 'minus')" class="calculator-button operator-button" aria-label="Operátor minus">-</button>
+
+            <!-- Row 4: 1, 2, 3, + -->
+            <button type="button" value="1" onclick="liveScreen('1', 'jedna')" class="calculator-button" aria-label="Číslo jedna">1</button>
+            <button type="button" value="2" onclick="liveScreen('2', 'dva')" class="calculator-button" aria-label="Číslo dva">2</button>
+            <button type="button" value="3" onclick="liveScreen('3', 'tři')" class="calculator-button" aria-label="Číslo tři">3</button>
+            <button type="button" value="+" onclick="liveScreen('+', 'plus')" class="calculator-button operator-button" aria-label="Operátor plus">+</button>
+
+            <!-- Row 5: 0, ., = (spanning 2 rows) -->
+            <button type="button" value="0" onclick="liveScreen('0', 'nula')" class="calculator-button" aria-label="Číslo nula">0</button>
+            <button type="button" value="." onclick="liveScreen('.', 'desetinná čárka')" class="calculator-button" aria-label="Desetinná čárka">.</button>
+            <button type="button" value="=" onclick="calculateResult()" id="equals-button" class="calculator-button operator-button" aria-label="Rovná se, vypočítat výsledek">=</button>
+        </div>
+    </div>
+
+    <!-- Oblast pro dynamické oznámení čtečce obrazovky -->
+    <div id="announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+    <script>
+        const res = document.getElementById("result");
+        const toast = document.getElementById("toast");
+        const themeIcon = document.getElementById("theme-icon");
+        const announcer = document.getElementById("announcer");
+
+        // Ikony pro motivy (Používáme placehold.co pro jednoduchost, v reálu by byly SVG nebo Font Awesome)
+        const lightThemeIcon = "https://placehold.co/25x25/ffffff/000000?text=☀️"; // Slunce na světlém pozadí
+        const darkThemeIcon = "https://placehold.co/25x25/000000/ffffff?text=🌙"; // Měsíc na tmavém pozadí
+
+        /**
+         * Funkce pro výpočet výsledku.
+         * Používá eval() pro vyhodnocení matematického výrazu.
+         * Oznámí výsledek nebo chybu čtečce obrazovky.
+         */
+        function calculateResult() {
+            let expression = res.value;
+            let calculatedValue;
+
+            // Nahradit 'x' za '*' pro eval
+            expression = expression.replace(/x/g, '*');
+
+            try {
+                calculatedValue = eval(expression);
+                if (isNaN(calculatedValue) || !isFinite(calculatedValue)) {
+                    res.value = "Chyba";
+                    announceToScreenReader("Chyba ve výpočtu.");
+                    setTimeout(() => { res.value = ""; }, 1500);
+                } else {
+                    res.value = calculatedValue;
+                    announceToScreenReader(`Výsledek je ${calculatedValue}.`);
+                }
+            } catch (e) {
+                res.value = "Chyba";
+                announceToScreenReader("Chyba ve výrazu.");
+                setTimeout(() => { res.value = ""; }, 1500);
+            }
+        }
+
+        /**
+         * Vymaže obsah displeje kalkulačky a oznámí to čtečce obrazovky.
+         */
+        function clearResult() {
+            res.value = "";
+            announceToScreenReader("Displej vymazán.");
+        }
+
+        /**
+         * Vymaže poslední zadaný vstup (číslo nebo operátor).
+         * Tato funkce je přidána pro tlačítko "CE".
+         */
+        function clearLastEntry() {
+            let currentExpression = res.value;
+            // Použijeme regulární výraz pro odstranění posledního čísla nebo operátoru
+            // Toto je zjednodušená verze, která nemusí být dokonalá pro složité výrazy
+            res.value = currentExpression.replace(/(\s*[-+*/%x]?\s*\d*\.?\d*)$/, '');
+            announceToScreenReader("Poslední vstup vymazán.");
+        }
+
+        /**
+         * Přepíná mezi světlým a tmavým motivem.
+         * Oznámí změnu motivu čtečce obrazovky.
+         */
+        function changeTheme() {
+            const body = document.body;
+            if (body.classList.contains('light-theme')) {
+                body.classList.remove('light-theme');
+                body.classList.add('dark-theme');
+                themeIcon.setAttribute("src", lightThemeIcon);
+                toast.textContent = "Tmavý režim 🌙";
+                announceToScreenReader("Tmavý režim aktivován.");
+            } else {
+                body.classList.remove('dark-theme');
+                body.classList.add('light-theme');
+                themeIcon.setAttribute("src", darkThemeIcon);
+                toast.textContent = "Světlý režim ☀️";
+                announceToScreenReader("Světlý režim aktivován.");
+            }
+            // Krátké zpoždění pro oznámení, pak návrat k "Kalkulačka"
+            setTimeout(() => {
+                toast.textContent = "Kalkulačka";
+            }, 1500);
+        }
+
+        /**
+         * Zobrazuje zadanou hodnotu na displeji a oznamuje ji čtečce obrazovky.
+         * @param {string} enteredValue Hodnota, která se má zobrazit.
+         * @param {string} announcementText Text pro oznámení čtečce obrazovky (např. "plus" místo "+").
+         */
+        function liveScreen(enteredValue, announcementText) {
+            if (res.value === "Chyba") {
+                res.value = ""; // Vymaže chybu před zadáním nového vstupu
+            }
+            res.value += enteredValue;
+            announceToScreenReader(announcementText);
+        }
+
+        /**
+         * Oznámí zprávu čtečce obrazovky pomocí aria-live regionu.
+         * @param {string} message Zpráva k oznámení.
+         */
+        function announceToScreenReader(message) {
+            announcer.textContent = message;
+        }
+
+        // Přidání posluchače událostí pro klávesnicové vstupy
+        document.addEventListener("keydown", keyboardInputHandler);
+
+        /**
+         * Funkce pro zpracování klávesnicových vstupů.
+         * @param {KeyboardEvent} e Událost klávesnice.
+         */
+        function keyboardInputHandler(e) {
+            e.preventDefault(); // Zabrání výchozímu chování prohlížeče
+
+            const key = e.key;
+            let announcedText = '';
+
+            // Čísla
+            if (key >= '0' && key <= '9') {
+                liveScreen(key, `číslo ${key}`);
+                return;
+            }
+
+            // Operátory
+            switch (key) {
+                case '+':
+                    liveScreen('+', 'plus');
+                    break;
+                case '-':
+                    liveScreen('-', 'minus');
+                    break;
+                case '*':
+                    liveScreen('*', 'krát');
+                    break;
+                case '/':
+                    liveScreen('/', 'děleno');
+                    break;
+                case '.':
+                    liveScreen('.', 'desetinná čárka');
+                    break;
+                case 'Enter':
+                    calculateResult();
+                    break;
+                case 'Backspace':
+                    const resultInput = res.value;
+                    res.value = resultInput.substring(0, res.value.length - 1);
+                    announceToScreenReader("Poslední znak smazán.");
+                    break;
+                case 'Escape': // Přidáno pro vymazání displeje
+                    clearResult();
+                    break;
+                default:
+                    // Ignorovat ostatní klávesy
+                    return;
+            }
+        }
+
+        // Nastavení výchozího motivu (tmavý)
+        document.body.classList.add('dark-theme');
+        themeIcon.setAttribute("src", lightThemeIcon); // Ikona slunce pro přepnutí na světlý motiv
+    </script>
+</body>
+</html>

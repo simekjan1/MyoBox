@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Přístupný časovač</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tone.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Základní styly pro tělo stránky */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1a1a; /* Tmavé pozadí */
+            color: #e0e0e0; /* Světlý text */
+            display: flex;
+            flex-direction: column; /* Umožňuje vertikální uspořádání prvků */
+            justify-content: flex-start; /* Zarovnání obsahu nahoru */
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 1.5rem;
+            box-sizing: border-box;
+        }
+
+        .timer-container {
+            background-color: #2c2c2c; /* Tmavší pozadí pro kontejner */
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+            padding: 2rem;
+            max-width: 500px; /* Optimalizovaná šířka */
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #4caf50; /* Zelená barva pro nadpis */
+            margin-bottom: 1.5rem;
+        }
+
+        /* Společné styly pro tlačítka */
+        .btn {
+            padding: 0.8rem 1.5rem;
+            margin: 0.4rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            color: #fff;
+            outline: none; /* Skryje výchozí outline */
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        .btn:active {
+            transform: translateY(0);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+        .btn:focus {
+            outline: 3px solid #8a2be2; /* Fialový rámeček pro fokus */
+            outline-offset: -3px;
+        }
+
+        /* Barevné varianty tlačítek */
+        .btn-preset { background-color: #4caf50; } /* Zelená */
+        .btn-preset:hover { background-color: #45a049; }
+
+        .btn-custom { background-color: #2196f3; } /* Modrá */
+        .btn-custom:hover { background-color: #1976d2; }
+
+        .btn-control { background-color: #ff9800; color: #000; } /* Oranžová */
+        .btn-control:hover { background-color: #fb8c00; }
+
+        .btn-mode { background-color: #6a5acd; } /* Fialová */
+        .btn-mode:hover { background-color: #5a4ac0; }
+
+        .btn-danger { background-color: #dc3545; } /* Červená */
+        .btn-danger:hover { background-color: #c82333; }
+
+        #timer-display {
+            font-size: clamp(3rem, 10vw, 6rem); /* Responzivní velikost */
+            margin: 2rem 0;
+            font-weight: bold;
+            letter-spacing: 2px;
+            color: #e0e0e0;
+            background-color: #1a1a1a;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.4);
+        }
+
+        input[type="number"] {
+            padding: 0.6rem;
+            font-size: 1.1rem;
+            width: 120px;
+            border-radius: 8px;
+            border: 1px solid #555;
+            background-color: #333;
+            color: #e0e0e0;
+            margin: 0.4rem;
+            outline: none;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+        input[type="number"]:focus {
+            border-color: #8a2be2;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3), 0 0 0 3px rgba(138, 43, 226, 0.5);
+        }
+
+        input[type="file"] {
+            margin-top: 1rem;
+            padding: 0.5rem;
+            background-color: #333;
+            border-radius: 8px;
+            border: 1px solid #555;
+            color: #e0e0e0;
+            cursor: pointer;
+        }
+
+        /* Skrytá oblast pro čtečku obrazovky */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+
+        /* Styl pro tlačítko Zpět na Dashboard */
+        .back-to-dashboard-link {
+            display: block; /* Aby zabíralo celou šířku a bylo na samostatném řádku */
+            width: fit-content; /* Aby se šířka přizpůsobila obsahu */
+            background-color: #4a4a4a;
+            color: #fff;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            font-weight: bold;
+            margin-bottom: 1.5rem; /* Mezera pod tlačítkem */
+            transition: background-color 0.2s ease;
+        }
+        .back-to-dashboard-link:hover {
+            background-color: #6a6a6a;
+        }
+        .back-to-dashboard-link:focus {
+            outline: 2px solid #facc15;
+            outline-offset: 2px;
+        }
+
+        /* Responsivní úpravy */
+        @media (max-width: 600px) {
+            .timer-container {
+                padding: 1.5rem;
+            }
+            h1 {
+                font-size: 2rem;
+            }
+            #timer-display {
+                font-size: 4rem;
+                margin: 1.5rem 0;
+            }
+            .btn {
+                font-size: 1rem;
+                padding: 0.6rem 1rem;
+                margin: 0.3rem;
+            }
+            input[type="number"] {
+                width: 100px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Odkaz zpět na Dashboard -->
+    <a href="../../../index.html" class="back-to-dashboard-link" aria-label="Zpět na hlavní dashboard JSM">← Zpět na Dashboard</a>
+
+    <div class="timer-container">
+        <h1>Přístupný časovač</h1>
+
+        <div class="mb-6">
+            <p class="text-sm text-gray-400 mb-2">Nastavte čas nebo použijte stopky:</p>
+            <button class="btn btn-preset" onclick="setCountdownTime(30)" aria-label="Nastavit odpočet na 30 minut">30 min</button>
+            <button class="btn btn-preset" onclick="setCountdownTime(60)" aria-label="Nastavit odpočet na 60 minut">60 min</button>
+            <button class="btn btn-preset" onclick="setCountdownTime(90)" aria-label="Nastavit odpočet na 90 minut">90 min</button>
+            <button class="btn btn-preset" onclick="setCountdownTime(120)" aria-label="Nastavit odpočet na 120 minut">120 min</button>
+            
+            <div class="mt-4">
+                <input type="number" id="customMinutes" placeholder="Minuty" min="1" aria-label="Zadejte vlastní počet minut pro odpočet">
+                <button class="btn btn-custom" onclick="setCustomCountdownTime()" aria-label="Nastavit vlastní čas odpočtu">Vlastní volba</button>
+            </div>
+            
+            <div class="mt-4">
+                <button class="btn btn-mode" onclick="toggleTimerMode('countdown')" id="countdownModeBtn" aria-label="Přepnout na režim odpočtu">Režim: Odpočet</button>
+                <button class="btn btn-mode" onclick="toggleTimerMode('stopwatch')" id="stopwatchModeBtn" aria-label="Přepnout na režim stopek">Režim: Stopky</button>
+            </div>
+        </div>
+
+        <div id="timer-display" role="timer" aria-live="polite" aria-atomic="true" aria-label="Aktuální čas na časovači">00:00:00</div>
+
+        <div class="control-buttons flex justify-center flex-wrap">
+            <button class="btn btn-control" onclick="togglePlayPause()" id="playPauseBtn" aria-label="Spustit nebo pozastavit časovač">Start</button>
+            <button class="btn btn-danger" onclick="resetTimer()" aria-label="Resetovat časovač">Reset</button>
+            <button class="btn btn-danger" onclick="stopAndResetTimer()" aria-label="Zastavit časovač">Zastavit</button> <!-- Nové tlačítko pro zastavení a reset -->
+        </div>
+
+        <div class="mt-6">
+            <label for="customSoundInput" class="sr-only">Nahrát vlastní zvuk alarmu</label>
+            <input type="file" id="customSoundInput" accept="audio/*" onchange="loadCustomSound()" aria-label="Nahrát vlastní zvuk alarmu">
+            <p class="text-xs text-gray-500 mt-2">Pokud nenahrajete vlastní zvuk, použije se výchozí alarm.</p>
+        </div>
+    </div>
+
+    <!-- Oblast pro dynamické oznámení čtečce obrazovky -->
+    <div id="announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+    <script>
+        let timerInterval; // Ukládá referenci na setInterval
+        let remainingSeconds = 0; // Pro odpočet
+        let elapsedSeconds = 0;    // Pro stopky
+        let isRunning = false;     // True, pokud časovač aktivně běží
+        let isPaused = false;      // True, pokud je časovač pozastaven
+        let currentTimerMode = 'countdown'; // 'countdown' nebo 'stopwatch'
+        let currentAccessibilityMode = 'normal'; // 'normal' nebo 'verbose'
+        let lastAnnouncedTime = -1; // Pro periodické oznámení času
+
+        // DOM elementy
+        const timerDisplay = document.getElementById('timer-display');
+        const customMinutesInput = document.getElementById('customMinutes');
+        const playPauseBtn = document.getElementById('playPauseBtn'); // Změněno ID
+        const countdownModeBtn = document.getElementById('countdownModeBtn');
+        const stopwatchModeBtn = document.getElementById('stopwatchModeBtn');
+        const announcer = document.getElementById('announcer');
+
+        // Tone.js syntezátory a zvuky
+        let audioContextStarted = false; // Příznak pro spuštění audio kontextu
+
+        const alarmSynth = new Tone.MembraneSynth({
+            pitchDecay: 0.02,
+            octaves: 10,
+            envelope: {
+                attack: 0.001,
+                decay: 0.8,
+                sustain: 0.01,
+                release: 1.5,
+            },
+        }).toDestination();
+
+        const tickSynth = new Tone.Synth({
+            oscillator: { type: "sine" },
+            envelope: { attack: 0.001, decay: 0.05, sustain: 0, release: 0.05 }
+        }).toDestination();
+
+        const startStopSynth = new Tone.Synth({
+            oscillator: { type: "triangle" },
+            envelope: { attack: 0.01, decay: 0.1, sustain: 0, release: 0.1 }
+        }).toDestination();
+
+        let customAlarmBuffer = null; // Pro načtený vlastní zvuk
+
+        // Funkce pro spuštění audio kontextu na první interakci uživatele
+        function startAudioContext() {
+            if (!audioContextStarted) {
+                Tone.start();
+                audioContextStarted = true;
+                console.log("AudioContext spuštěn.");
+                // Odebere posluchače po spuštění, aby se nevolal opakovaně
+                document.body.removeEventListener('click', startAudioContext);
+                document.body.removeEventListener('keydown', startAudioContext);
+            }
+        }
+
+        // Přidání posluchačů událostí pro spuštění audio kontextu
+        document.body.addEventListener('click', startAudioContext);
+        document.body.addEventListener('keydown', startAudioContext);
+
+        /**
+         * Nastaví odpočet na zadaný počet minut.
+         * @param {number} minutes Počet minut.
+         */
+        function setCountdownTime(minutes) {
+            stopTimerInternal(); // Zastaví a resetuje předchozí časovač
+            remainingSeconds = minutes * 60;
+            updateDisplay();
+            announceToScreenReader(`Odpočet nastaven na ${minutes} minut.`);
+            updateControlButtons();
+        }
+
+        /**
+         * Nastaví odpočet na vlastní počet minut z inputu.
+         */
+        function setCustomCountdownTime() {
+            const mins = parseInt(customMinutesInput.value);
+            if (!isNaN(mins) && mins > 0) {
+                setCountdownTime(mins);
+            } else {
+                announceToScreenReader("Prosím, zadejte platný počet minut (větší než 0).");
+            }
+        }
+
+        /**
+         * Přepíná režim časovače (odpočet/stopky).
+         * @param {string} mode Nový režim ('countdown' nebo 'stopwatch').
+         */
+        function toggleTimerMode(mode) {
+            if (currentTimerMode === mode) return; // Již v tomto režimu
+
+            stopTimerInternal(); // Zastaví a resetuje předchozí časovač
+
+            currentTimerMode = mode;
+            if (mode === 'countdown') {
+                announceToScreenReader("Režim přepnut na odpočet. Nastavte čas.");
+                // Zobrazit input pro vlastní minuty a preset tlačítka
+                document.querySelectorAll('.btn-preset, #customMinutes, .btn-custom').forEach(el => el.style.display = '');
+            } else { // stopwatch
+                elapsedSeconds = 0; // Reset stopek
+                updateDisplay();
+                announceToScreenReader("Režim přepnut na stopky. Stopky jsou připraveny.");
+                // Skrýt input pro vlastní minuty a preset tlačítka
+                document.querySelectorAll('.btn-preset, #customMinutes, .btn-custom').forEach(el => el.style.display = 'none');
+            }
+            updateControlButtons(); // Aktualizuje vzhled tlačítek
+        }
+
+        /**
+         * Aktualizuje zobrazení času na displeji.
+         */
+        function updateDisplay() {
+            let totalSeconds = currentTimerMode === 'countdown' ? remainingSeconds : elapsedSeconds;
+            const hrs = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+            const mins = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+            const secs = String(totalSeconds % 60).padStart(2, '0');
+            timerDisplay.textContent = `${hrs}:${mins}:${secs}`;
+            timerDisplay.setAttribute('aria-label', `Aktuální čas: ${parseInt(hrs)} hodin, ${parseInt(mins)} minut, ${parseInt(secs)} sekund.`);
+
+            // Periodické oznámení pro výřečný režim
+            if (currentAccessibilityMode === 'verbose') {
+                if (currentTimerMode === 'countdown') {
+                    if (remainingSeconds === 0) {
+                        // Alarm se oznámí samostatně
+                    } else if (remainingSeconds <= 10) {
+                        // Posledních 10 sekund, oznamovat každou sekundu
+                        if (lastAnnouncedTime !== remainingSeconds) {
+                            announceToScreenReader(`${remainingSeconds} sekund do konce.`);
+                            lastAnnouncedTime = remainingSeconds;
+                        }
+                    } else if (remainingSeconds % 60 === 0 && remainingSeconds > 0) {
+                        // Každá celá minuta
+                        announceToScreenReader(`${Math.floor(remainingSeconds / 60)} minut do konce.`);
+                    }
+                } else { // Stopwatch
+                    if (elapsedSeconds % 60 === 0 && elapsedSeconds > 0) {
+                        // Každá celá minuta
+                        announceToScreenReader(`${Math.floor(elapsedSeconds / 60)} minut uplynulo.`);
+                    }
+                }
+            }
+        }
+
+        /**
+         * Načte vlastní zvuk alarmu z vybraného souboru.
+         */
+        function loadCustomSound() {
+            const fileInput = document.getElementById('customSoundInput');
+            const file = fileInput.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    try {
+                        // Dekóduje audio data do AudioBufferu
+                        customAlarmBuffer = await Tone.context.decodeAudioData(e.target.result);
+                        announceToScreenReader("Vlastní zvuk alarmu byl úspěšně nahrán.");
+                    } catch (err) {
+                        console.warn("Chyba při načítání vlastního zvuku:", err);
+                        announceToScreenReader("Chyba při načítání vlastního zvuku. Zkuste jiný soubor.");
+                        customAlarmBuffer = null;
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            } else {
+                customAlarmBuffer = null;
+                announceToScreenReader("Vlastní zvuk alarmu byl zrušen. Použije se výchozí alarm.");
+            }
+        }
+
+        /**
+         * Spustí nebo pozastaví časovač.
+         */
+        function togglePlayPause() {
+            if (!audioContextStarted) {
+                Tone.start();
+                audioContextStarted = true;
+            }
+
+            if (isRunning) { // Pokud časovač běží, pozastavíme ho
+                clearInterval(timerInterval);
+                timerInterval = null;
+                isRunning = false;
+                isPaused = true;
+                startStopSynth.triggerAttackRelease("G4", "8n"); // Zvuk pauzy
+                announceToScreenReader("Časovač pozastaven.");
+            } else { // Pokud je časovač pozastaven nebo zastaven, spustíme/obnovíme ho
+                if (currentTimerMode === 'countdown' && remainingSeconds <= 0) {
+                    announceToScreenReader("Prosím, nastavte čas pro odpočet.");
+                    return;
+                }
+                isRunning = true;
+                isPaused = false;
+                startStopSynth.triggerAttackRelease("C5", "8n"); // Zvuk startu
+                announceToScreenReader(currentTimerMode === 'countdown' ? "Odpočet spuštěn." : "Stopky spuštěny.");
+                lastAnnouncedTime = -1; // Reset pro periodické oznámení
+
+                timerInterval = setInterval(() => {
+                    if (currentTimerMode === 'countdown') {
+                        if (remainingSeconds > 0) {
+                            remainingSeconds--;
+                            updateDisplay();
+                            if (currentAccessibilityMode === 'verbose' && remainingSeconds > 0 && remainingSeconds <= 10) {
+                                tickSynth.triggerAttackRelease("C4", "32n"); // Tikání v posledních 10 sekundách
+                            }
+                        } else {
+                            clearInterval(timerInterval);
+                            timerInterval = null;
+                            isRunning = false; // Časovač dokončen
+                            playAlarm();
+                            announceToScreenReader("Časovač dokončen!");
+                        }
+                    } else { // Stopwatch
+                        elapsedSeconds++;
+                        updateDisplay();
+                        if (currentAccessibilityMode === 'verbose' && elapsedSeconds % 10 === 0) {
+                            tickSynth.triggerAttackRelease("C4", "32n"); // Tikání každých 10 sekund
+                        }
+                    }
+                }, 1000);
+            }
+            updateControlButtons(); // Aktualizuje text a ARIA popisek tlačítka
+        }
+
+        /**
+         * Resetuje časovač na počáteční hodnotu (00:00:00 nebo nastavený odpočet).
+         */
+        function resetTimer() {
+            stopTimerInternal(); // Zastaví interval
+            if (currentTimerMode === 'countdown') {
+                const mins = parseInt(customMinutesInput.value);
+                if (!isNaN(mins) && mins > 0) {
+                    remainingSeconds = mins * 60;
+                } else {
+                    remainingSeconds = 0;
+                }
+            } else { // stopwatch
+                elapsedSeconds = 0;
+            }
+            updateDisplay();
+            startStopSynth.triggerAttackRelease("A3", "8n"); // Zvuk resetu
+            announceToScreenReader("Časovač resetován.");
+            updateControlButtons();
+        }
+
+        /**
+         * Zastaví časovač a vymaže jeho stav.
+         * Interní funkce, volaná z resetTimer a stopAndResetTimer.
+         */
+        function stopTimerInternal() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            isRunning = false;
+            isPaused = false;
+        }
+
+        /**
+         * Zastaví časovač a resetuje ho na 00:00:00.
+         * Tlačítko "Zastavit" dělá to samé co "Reset", ale s jiným smyslem pro uživatele.
+         */
+        function stopAndResetTimer() {
+            resetTimer(); // Pro zjednodušení voláme reset
+            announceToScreenReader("Časovač zastaven.");
+        }
+
+        /**
+         * Přehrává alarm zvuk.
+         */
+        function playAlarm() {
+            if (!audioContextStarted) {
+                Tone.start();
+                audioContextStarted = true;
+            }
+            if (customAlarmBuffer) {
+                // Pokud je nahrán vlastní zvuk, použijeme ho
+                const player = new Tone.BufferSource(customAlarmBuffer).toDestination();
+                player.start();
+                player.onended = () => { player.dispose(); }; // Uvolnit zdroj po přehrání
+            } else {
+                // Jinak použijeme výchozí syntetický alarm
+                alarmSynth.triggerAttackRelease("C3", "2n");
+                alarmSynth.triggerAttackRelease("G3", "2n", "+0.5");
+                alarmSynth.triggerAttackRelease("C4", "2n", "+1");
+            }
+            announceToScreenReader("Alarm! Čas vypršel!");
+        }
+
+        /**
+         * Oznámí zprávu čtečce obrazovky pomocí aria-live regionu.
+         * @param {string} message Zpráva k oznámení.
+         */
+        function announceToScreenReader(message) {
+            announcer.textContent = message;
+        }
+
+        /**
+         * Zpracovává klávesnicové vstupy.
+         * @param {KeyboardEvent} e Událost klávesnice.
+         */
+        document.addEventListener("keydown", (e) => {
+            if (!audioContextStarted) {
+                Tone.start();
+                audioContextStarted = true;
+            }
+            // Zabrání výchozímu chování prohlížeče pro klávesy, které ovládáme
+            if ([' ', 'Enter', 'Escape', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+                e.preventDefault();
+            }
+
+            switch (e.key) {
+                case ' ': // Mezerník pro start/pauzu
+                case 'Enter': // Enter pro start/pauzu
+                    togglePlayPause();
+                    break;
+                case 'Escape': // Escape pro reset
+                    resetTimer();
+                    break;
+                case 'ArrowLeft': // Šipka doleva pro přepnutí režimu na odpočet
+                    toggleTimerMode('countdown');
+                    break;
+                case 'ArrowRight': // Šipka doprava pro přepnutí režimu na stopky
+                    toggleTimerMode('stopwatch');
+                    break;
+                case 'v': // 'v' pro přepnutí výřečného režimu
+                case 'V':
+                    toggleAccessibilityMode();
+                    break;
+                case 't': // 't' pro oznámení aktuálního času
+                case 'T':
+                    announceCurrentTime();
+                    break;
+            }
+        });
+
+        /**
+         * Přepíná mezi normálním a výřečným režimem přístupnosti.
+         */
+        function toggleAccessibilityMode() {
+            currentAccessibilityMode = currentAccessibilityMode === 'normal' ? 'verbose' : 'normal';
+            announceToScreenReader(`Režim přístupnosti přepnut na ${currentAccessibilityMode === 'normal' ? 'Normální' : 'Výřečný'}.`);
+        }
+
+        /**
+         * Oznámí aktuální čas na displeji časovače.
+         */
+        function announceCurrentTime() {
+            announceToScreenReader(timerDisplay.getAttribute('aria-label'));
+        }
+
+        /**
+         * Aktualizuje text a ARIA popisek tlačítka Start/Pauza.
+         */
+        function updateControlButtons() {
+            if (isRunning) { // Časovač běží
+                playPauseBtn.textContent = "Pauza";
+                playPauseBtn.setAttribute('aria-label', "Pozastavit časovač");
+            } else {
+                if (isPaused) { // Časovač je pozastaven
+                    playPauseBtn.textContent = "Pokračovat";
+                    playPauseBtn.setAttribute('aria-label', "Pokračovat v časovači");
+                } else { // Časovač je zastavený/resetovaný
+                    playPauseBtn.textContent = "Start";
+                    playPauseBtn.setAttribute('aria-label', "Spustit časovač");
+                }
+            }
+
+            // Zvýraznění aktivního režimu
+            if (currentTimerMode === 'countdown') {
+                countdownModeBtn.classList.add('btn-custom');
+                countdownModeBtn.classList.remove('btn-mode');
+                stopwatchModeBtn.classList.remove('btn-custom');
+                stopwatchModeBtn.classList.add('btn-mode');
+            } else {
+                stopwatchModeBtn.classList.add('btn-custom');
+                stopwatchModeBtn.classList.remove('btn-mode');
+                countdownModeBtn.classList.remove('btn-custom');
+                countdownModeBtn.classList.add('btn-mode');
+            }
+        }
+
+        // Inicializace při načtení stránky
+        document.addEventListener('DOMContentLoaded', () => {
+            updateDisplay();
+            updateControlButtons();
+            toggleTimerMode('countdown'); // Nastaví výchozí režim a aktualizuje tlačítka
+        });
+    </script>
+</body>
+</html>

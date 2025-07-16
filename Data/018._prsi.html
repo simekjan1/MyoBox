@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hra Prší - Přístupná verze</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Základní styly pro tělo stránky a písmo */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* Světle modré pozadí */
+            color: #2d3748; /* Tmavě šedý text */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* Kontejner pro celou hru */
+        .game-container {
+            background-color: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            text-align: center;
+        }
+
+        /* Styly pro nadpisy */
+        h1 {
+            font-size: 2.5em;
+            color: #3182ce; /* Modrá barva */
+            margin-bottom: 15px;
+        }
+
+        h2 {
+            font-size: 1.8em;
+            color: #4a5568; /* Tmavší šedá */
+            margin-bottom: 10px;
+        }
+
+        /* Styly pro karty na stole */
+        .card-on-table {
+            background-color: #e2e8f0; /* Světlejší šedá */
+            border: 2px solid #a0aec0; /* Středně šedý okraj */
+            border-radius: 10px;
+            padding: 15px 25px;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #2c5282; /* Tmavší modrá */
+            margin-bottom: 20px;
+            min-height: 50px; /* Zajistí, že element má vždy nějakou výšku */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Styly pro zprávy hry */
+        .game-messages {
+            background-color: #ebf8ff; /* Velmi světle modrá */
+            border: 1px solid #90cdf4; /* Světle modrý okraj */
+            border-radius: 8px;
+            padding: 15px;
+            font-size: 1.1em;
+            color: #2b6cb0; /* Středně modrá */
+            margin-bottom: 20px;
+            min-height: 40px; /* Zajistí, že element má vždy nějakou výšku */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Styly pro seznam karet v ruce hráče */
+        .player-hand {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            list-style: none;
+            padding: 0;
+            margin-bottom: 20px;
+        }
+
+        .player-hand li {
+            background-color: #fff;
+            border: 1px solid #cbd5e0; /* Světle šedý okraj */
+            border-radius: 8px;
+            padding: 12px 18px;
+            font-size: 1.1em;
+            font-weight: 500;
+            color: #2d3748;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .player-hand li:hover,
+        .player-hand li:focus {
+            background-color: #e2e8f0; /* Světlejší šedá při najetí/fokusu */
+            border-color: #4299e1; /* Modrý okraj při najetí/fokusu */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            outline: none; /* Odstraní výchozí outline prohlížeče */
+        }
+
+        /* Styly pro tlačítka */
+        .game-buttons button {
+            background-color: #4299e1; /* Modrá */
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+            margin: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .game-buttons button:hover {
+            background-color: #3182ce; /* Tmavší modrá při najetí */
+            transform: translateY(-2px); /* Mírný posun nahoru */
+        }
+
+        .game-buttons button:active {
+            background-color: #2c5282; /* Ještě tmavší modrá při stisku */
+            transform: translateY(0); /* Návrat do původní pozice */
+        }
+
+        .game-buttons button:disabled {
+            background-color: #a0aec0; /* Šedá pro neaktivní tlačítka */
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        /* Styly pro výběr barvy po zahrání Svrška */
+        #vyberBarvyContainer {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        #vyberBarvyContainer button {
+            background-color: #63b3ed; /* Světlejší modrá */
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+        }
+
+        #vyberBarvyContainer button:hover {
+            background-color: #4299e1; /* Modrá */
+        }
+
+        /* Skrytí elementů pro AI ruku, které nejsou vizuálně potřeba */
+        #aiHand {
+            display: none;
+        }
+
+        /* Responzivní design pro menší obrazovky */
+        @media (max-width: 600px) {
+            .game-container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 2em;
+            }
+            h2 {
+                font-size: 1.5em;
+            }
+            .card-on-table, .game-messages {
+                font-size: 1.2em;
+                padding: 10px;
+            }
+            .player-hand li {
+                padding: 10px 15px;
+                font-size: 1em;
+            }
+            .game-buttons button {
+                padding: 10px 20px;
+                font-size: 1em;
+            }
+            #vyberBarvyContainer button {
+                padding: 8px 15px;
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Hra Prší</h1>
+
+        <section>
+            <h2>Karta na stole:</h2>
+            <div id="kartaNaStole" class="card-on-table" aria-live="polite">Žádná karta</div>
+        </section>
+
+        <section>
+            <h2>Zprávy hry:</h2>
+            <div id="zpravyHry" class="game-messages" aria-live="assertive">Vítej ve hře Prší! Hru ovládáš klávesou Tab pro pohyb mezi prvky a Enterem nebo mezerníkem pro jejich aktivaci. Klikni na "Nová hra" pro začátek.</div>
+        </section>
+
+        <section>
+            <h2>Tvoje karty (<span id="pocetKaretHrace">0</span>):</h2>
+            <ul id="seznamKaretHrace" class="player-hand">
+                <!-- Zde se budou dynamicky vkládat karty hráče -->
+            </ul>
+            <div id="vyberBarvyContainer" style="display: none;">
+                <h3>Vyber novou barvu:</h3>
+                <!-- Tlačítka pro výběr barvy se vloží dynamicky -->
+            </div>
+        </section>
+
+        <section class="game-buttons">
+            <button id="novaHraButton">Nová hra</button>
+            <button id="liznoutKartuButton" disabled>Líznout kartu</button>
+        </section>
+
+        <!-- Skrytý element pro AI ruku, pro účely logiky, ne pro zobrazení -->
+        <div id="aiHand" aria-hidden="true"></div>
+    </div>
+
+    <script>
+        // DOM elementy
+        const novaHraButton = document.getElementById('novaHraButton');
+        const liznoutKartuButton = document.getElementById('liznoutKartuButton');
+        const kartaNaStoleElement = document.getElementById('kartaNaStole');
+        const zpravyHryElement = document.getElementById('zpravyHry');
+        const seznamKaretHraceElement = document.getElementById('seznamKaretHrace');
+        const pocetKaretHraceElement = document.getElementById('pocetKaretHrace');
+        const vyberBarvyContainer = document.getElementById('vyberBarvyContainer');
+
+        // Herní stav
+        let balicek = [];
+        let rukaHrace = [];
+        let rukaAI = [];
+        let odhazovaciBalicek = [];
+        let kartaNaStole = null;
+        let naTahu = 'hrac'; // 'hrac' nebo 'ai'
+        let hraBezi = false;
+        let tahAIProbíhá = false; // Zabrání vícenásobnému spuštění tahu AI
+        let pocetKaretKDobirani = 0; // Pro Sedmu - kolik karet má další hráč dobrat
+        let pocetTahuKPreskoceni = 0; // Pro Eso - kolik tahů má další hráč přeskočit
+        let aktualniBarva = null; // Aktuální barva, pokud byla změněna Svrškem
+
+        // Definice karet (české/německé karty)
+        const barvy = ['Kule', 'Zelené', 'Červené', 'Žaludy'];
+        const hodnoty = ['Sedma', 'Osma', 'Devítka', 'Desítka', 'Spodek', 'Svršek', 'Král', 'Eso'];
+
+        // AudioContext pro generování zvuků
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        /**
+         * Přehrává jednoduchý tón.
+         * @param {number} frequency Frekvence tónu (Hz).
+         * @param {number} duration Doba trvání tónu (sekundy).
+         * @param {number} type Typ vlny (0=sine, 1=square, 2=sawtooth, 3=triangle).
+         */
+        function playTone(frequency, duration, type = 0) {
+            if (!audioContext) return;
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.frequency.value = frequency;
+            oscillator.type = ['sine', 'square', 'sawtooth', 'triangle'][type];
+
+            gainNode.gain.setValueAtTime(0.5, audioContext.currentTime); // Hlasitost
+            gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + duration); // Fade out
+
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + duration);
+        }
+
+        /** Přehrává zvuk pro Sedmu. */
+        function playSedmaSound() {
+            playTone(440, 0.2, 1); // A4, square wave
+            setTimeout(() => playTone(550, 0.2, 1), 100); // Mírně vyšší tón
+        }
+
+        /** Přehrává zvuk pro Eso. */
+        function playEsoSound() {
+            playTone(330, 0.3, 2); // E4, sawtooth wave
+        }
+
+        /** Přehrává zvuk pro Svrška. */
+        function playSvrsekSound() {
+            playTone(660, 0.15, 0); // E5, sine wave
+            setTimeout(() => playTone(770, 0.15, 0), 75); // G5, sine wave
+        }
+
+
+        /**
+         * Vytvoří balíček 32 karet.
+         * @returns {Array<Object>} Balíček karet.
+         */
+        function vytvorBalicek() {
+            const novyBalicek = [];
+            for (const barva of barvy) {
+                for (const hodnota of hodnoty) {
+                    novyBalicek.push({ barva, hodnota });
+                }
+            }
+            return novyBalicek;
+        }
+
+        /**
+         * Zamíchá balíček karet.
+         * @param {Array<Object>} balicek Který balíček zamíchat.
+         * @returns {Array<Object>} Zamíchaný balíček.
+         */
+        function zamichejBalicek(balicek) {
+            for (let i = balicek.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [balicek[i], balicek[j]] = [balicek[j], balicek[i]]; // Prohození karet
+            }
+            return balicek;
+        }
+
+        /**
+         * Převede objekt karty na čitelný řetězec.
+         * @param {Object} karta Objekt karty { barva: string, hodnota: string }.
+         * @returns {string} Popis karty (např. "Červené Eso").
+         */
+        function popisKarty(karta) {
+            return `${karta.barva} ${karta.hodnota}`;
+        }
+
+        /**
+         * Zobrazí zprávu ve hře a oznámí ji čtečce obrazovky.
+         * @param {string} zprava Text zprávy.
+         * @param {boolean} [assertive=false] Pokud true, použije aria-live="assertive" pro okamžité oznámení.
+         */
+        function zobrazZpravu(zprava, assertive = false) {
+            zpravyHryElement.textContent = zprava;
+            zpravyHryElement.setAttribute('aria-live', assertive ? 'assertive' : 'polite');
+            // Krátká prodleva pro zajištění, že se DOM aktualizuje předtím, než čtečka začne číst
+            setTimeout(() => {
+                zpravyHryElement.setAttribute('aria-live', 'polite'); // Vrátí na polite
+            }, 100);
+        }
+
+        /**
+         * Aktualizuje zobrazení karet hráče.
+         */
+        function aktualizujRukuHrace() {
+            seznamKaretHraceElement.innerHTML = ''; // Vyčistí stávající karty
+            pocetKaretHraceElement.textContent = rukaHrace.length;
+
+            if (rukaHrace.length === 0 && hraBezi) {
+                zobrazZpravu('Nemáš žádné karty! Vyhrál jsi!', true);
+                ukonciHru('hrac');
+                return;
+            }
+
+            rukaHrace.forEach((karta, index) => {
+                const li = document.createElement('li');
+                li.textContent = popisKarty(karta);
+                li.tabIndex = 0; // Umožní fokusu klávesnicí
+                li.setAttribute('role', 'button'); // Pro lepší sémantiku pro čtečky
+                li.setAttribute('aria-label', `Zahrát kartu ${popisKarty(karta)}`); // Popis pro čtečku
+
+                li.addEventListener('click', () => zahrajKarta(karta, index));
+                li.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter' || event.key === ' ') { // Mezerník nebo Enter
+                        zahrajKarta(karta, index);
+                    }
+                });
+                seznamKaretHraceElement.appendChild(li);
+            });
+
+            // Fokus se nastavuje v dalsiTah() pro lepší kontrolu
+        }
+
+        /**
+         * Zkontroluje, zda je karta platná pro zahrání na stávající kartu na stole.
+         * @param {Object} karta Karta, kterou chce hráč zahrát.
+         * @param {Object} kartaNaStole Aktuální karta na stole.
+         * @returns {boolean} True, pokud je karta platná, jinak false.
+         */
+        function jeKartaPlatna(karta, kartaNaStole) {
+            if (!kartaNaStole) return true; // Pokud je stůl prázdný, lze hrát cokoli
+
+            // Pokud je aktivní změněná barva Svrškem, hraje se na ni
+            const aktualniBarvaNaStole = aktualniBarva || kartaNaStole.barva;
+
+            // Shoda barvy nebo hodnoty
+            if (karta.barva === aktualniBarvaNaStole || karta.hodnota === kartaNaStole.hodnota) {
+                return true;
+            }
+
+            // Speciální pravidla pro Sedmu, Eso, Svršek - lze hrát na cokoli
+            if (karta.hodnota === 'Sedma' || karta.hodnota === 'Eso' || karta.hodnota === 'Svršek') {
+                return true;
+            }
+
+            return false;
+        }
+
+        /**
+         * Zpracuje zahrání karty hráčem.
+         * @param {Object} karta Karta, kterou hráč zahrál.
+         * @param {number} index Index karty v ruce hráče.
+         */
+        function zahrajKarta(karta, index) {
+            if (!hraBezi || naTahu !== 'hrac' || vyberBarvyContainer.style.display !== 'none') {
+                zobrazZpravu('Teď nejsi na tahu, hra neběží nebo čekáš na výběr barvy.');
+                return;
+            }
+
+            // Speciální kontrola pro přebíjení Sedmy/Esa
+            if (pocetKaretKDobirani > 0 && karta.hodnota !== 'Sedma') {
+                zobrazZpravu(`Musíš zahrát Sedmu, nebo líznout ${pocetKaretKDobirani} karet.`);
+                return;
+            }
+            if (pocetTahuKPreskoceni > 0 && karta.hodnota !== 'Eso') {
+                zobrazZpravu(`Musíš zahrát Eso, nebo stát ${pocetTahuKPreskoceni} tah(y).`);
+                return;
+            }
+
+            if (!jeKartaPlatna(karta, kartaNaStole)) {
+                zobrazZpravu(`Nemůžeš zahrát ${popisKarty(karta)}. Musíš hrát ${aktualniBarva || kartaNaStole.barva} nebo ${kartaNaStole.hodnota}, nebo Sedmu/Eso/Svrška.`);
+                return;
+            }
+
+            // Odebrání karty z ruky hráče
+            rukaHrace.splice(index, 1);
+            odhazovaciBalicek.push(kartaNaStole); // Přesune starou kartu na odhazovací balíček
+            kartaNaStole = karta; // Nastaví novou kartu na stůl
+            aktualniBarva = null; // Resetuje změněnou barvu po zahrání nové karty
+
+            kartaNaStoleElement.textContent = popisKarty(kartaNaStole);
+            kartaNaStoleElement.setAttribute('aria-label', `Na stole je ${popisKarty(kartaNaStole)}.`);
+            zobrazZpravu(`Zahrál jsi ${popisKarty(kartaNaStole)}.`);
+
+            // Zvuková odezva pro speciální karty
+            if (karta.hodnota === 'Sedma') {
+                playSedmaSound();
+            } else if (karta.hodnota === 'Eso') {
+                playEsoSound();
+            } else if (karta.hodnota === 'Svršek') {
+                playSvrsekSound();
+            }
+
+            aktualizujRukuHrace(); // Aktualizuje UI
+
+            // Hlášení poslední karty
+            if (rukaHrace.length === 1) {
+                zobrazZpravu('Máš poslední kartu!', true);
+            }
+
+            // Zpracování speciálních karet
+            if (karta.hodnota === 'Sedma') {
+                pocetKaretKDobirani += 2; // Přidá 2 karty k dobírání
+                zobrazZpravu(`Zahrál jsi Sedmu! Následující hráč musí dobrat ${pocetKaretKDobirani} karet, pokud nemá také Sedmu.`);
+                // Tah se posouvá na dalšího hráče, který bude řešit tento trest
+                naTahu = (naTahu === 'hrac') ? 'ai' : 'hrac'; // Přepne na AI
+                dalsiTah();
+            } else if (karta.hodnota === 'Eso') {
+                pocetTahuKPreskoceni += 1; // Přidá 1 tah k přeskočení
+                zobrazZpravu(`Zahrál jsi Eso! Následující hráč ztrácí ${pocetTahuKPreskoceni} tah(y), pokud nemá také Eso.`);
+                // Tah se posouvá na dalšího hráče, který bude řešit tento trest
+                naTahu = (naTahu === 'hrac') ? 'ai' : 'hrac'; // Přepne na AI
+                dalsiTah();
+            } else if (karta.hodnota === 'Svršek') {
+                zobrazZpravu('Zahrál jsi Svrška! Vyber novou barvu.');
+                zobrazVyberBarvy(); // Po výběru barvy se zavolá dalsiTah()
+            } else {
+                naTahu = (naTahu === 'hrac') ? 'ai' : 'hrac'; // Normální tah, přepne na AI
+                dalsiTah();
+            }
+        }
+
+        /**
+         * Dobere karty pro danou ruku.
+         * @param {Array<Object>} ruka Ruka, do které se mají karty dobrat.
+         * @param {number} pocet Počet karet k dobrání.
+         * @param {boolean} [isAI=false] True, pokud dobírá AI, pro specifické hlášení.
+         */
+        function dobratKarty(ruka, pocet, isAI = false) {
+            let dobraneKarty = 0;
+            for (let i = 0; i < pocet; i++) {
+                if (balicek.length === 0) {
+                    // Pokud dojde balíček, zamíchá odhazovací balíček (kromě vrchní karty)
+                    if (odhazovaciBalicek.length <= 1) { // Musí zůstat alespoň jedna karta na stole
+                        zobrazZpravu('Není co dobírat, balíček i odhazovací balíček jsou téměř prázdné. Konec hry.', true);
+                        ukonciHru('remiza');
+                        return dobraneKarty; // Vrátí počet skutečně dobraných karet
+                    }
+                    const vrchniKarta = odhazovaciBalicek.pop(); // Uloží vrchní kartu
+                    balicek = zamichejBalicek(odhazovaciBalicek);
+                    odhazovaciBalicek = [vrchniKarta]; // Vrátí vrchní kartu na odhazovací balíček
+                    zobrazZpravu('Balíček došel, zamíchal jsem odhazovací balíček.', true);
+                }
+                ruka.push(balicek.pop());
+                dobraneKarty++;
+            }
+            if (isAI && dobraneKarty > 0) {
+                 zobrazZpravu(`AI si líže ${dobraneKarty} kartu(y). AI má nyní ${ruka.length} karet.`);
+            } else if (!isAI && dobraneKarty > 0) {
+                 zobrazZpravu(`Líznul jsi si ${dobraneKarty} kartu(y). Máš nyní ${ruka.length} karet.`);
+            }
+            return dobraneKarty;
+        }
+
+        /**
+         * Zpracuje tah hráče, který se rozhodl dobírat kartu.
+         */
+        function hracLizneKarty() {
+            if (!hraBezi || naTahu !== 'hrac' || vyberBarvyContainer.style.display !== 'none') {
+                zobrazZpravu('Teď nejsi na tahu, hra neběží nebo čekáš na výběr barvy.');
+                return;
+            }
+
+            const pocet = pocetKaretKDobirani > 0 ? pocetKaretKDobirani : 1;
+            dobratKarty(rukaHrace, pocet, false); // isAI = false
+            pocetKaretKDobirani = 0; // Resetuje počítadlo karet k dobírání
+            aktualizujRukuHrace();
+            // Hlášení poslední karty po líznutí
+            if (rukaHrace.length === 1) {
+                zobrazZpravu('Máš poslední kartu!', true);
+            }
+            naTahu = (naTahu === 'hrac') ? 'ai' : 'hrac'; // Po líznutí se tah vždy posouvá
+            dalsiTah();
+        }
+
+        /**
+         * Zobrazí UI pro výběr barvy po zahrání Svrška.
+         */
+        function zobrazVyberBarvy() {
+            vyberBarvyContainer.innerHTML = '<h3>Vyber novou barvu:</h3>';
+            barvy.forEach(barva => {
+                const button = document.createElement('button');
+                button.textContent = barva;
+                button.setAttribute('aria-label', `Zvolit barvu ${barva}`);
+                button.addEventListener('click', () => zvolBarvu(barva));
+                button.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        zvolBarvu(barva);
+                    }
+                });
+                vyberBarvyContainer.appendChild(button);
+            });
+            vyberBarvyContainer.style.display = 'flex';
+            liznoutKartuButton.disabled = true; // Zakáže lízání, dokud se nevybere barva
+            seznamKaretHraceElement.querySelectorAll('li').forEach(li => li.tabIndex = -1); // Zakáže karty
+            vyberBarvyContainer.firstElementChild.nextElementSibling?.focus(); // Přesune fokus na první tlačítko barvy
+        }
+
+        /**
+         * Zpracuje volbu barvy po zahrání Svrška.
+         * @param {string} barva Zvolená barva.
+         */
+        function zvolBarvu(barva) {
+            aktualniBarva = barva;
+            kartaNaStoleElement.textContent = `${popisKarty(kartaNaStole)} (barva změněna na ${barva})`;
+            kartaNaStoleElement.setAttribute('aria-label', `Na stole je ${popisKarty(kartaNaStole)}, barva změněna na ${barva}.`);
+            zobrazZpravu(`Barva změněna na ${barva}.`);
+            vyberBarvyContainer.style.display = 'none';
+            liznoutKartuButton.disabled = false; // Povolí lízání
+            aktualizujRukuHrace(); // Povolí karty zpět
+            naTahu = (naTahu === 'hrac') ? 'ai' : 'hrac'; // Po zahrání Svrška se tah posouvá
+            dalsiTah();
+        }
+
+        /**
+         * Přepne tah na dalšího hráče (nebo AI) a spustí jeho tah.
+         */
+        function dalsiTah() {
+            if (!hraBezi) return;
+
+            // Kontrola vítěze před začátkem nového tahu
+            if (rukaHrace.length === 0) {
+                zobrazZpravu('Gratuluji! Vyhrál jsi!', true);
+                ukonciHru('hrac');
+                return;
+            }
+            if (rukaAI.length === 0) {
+                zobrazZpravu('AI vyhrála!', true);
+                ukonciHru('ai');
+                return;
+            }
+
+            // Kdo je na tahu TEĎ (kdo bude řešit případné tresty nebo hrát)
+            const currentPlayerIsHuman = (naTahu === 'hrac');
+            const currentPlayerHand = currentPlayerIsHuman ? rukaHrace : rukaAI;
+            const currentPlayerName = currentPlayerIsHuman ? 'hráč' : 'AI';
+
+            // 1. Řešení trestu Sedmy
+            if (pocetKaretKDobirani > 0) {
+                const maSedmu = currentPlayerHand.find(karta => karta.hodnota === 'Sedma');
+                if (maSedmu) {
+                    zobrazZpravu(`${currentPlayerName} je na tahu. Na stole je ${popisKarty(kartaNaStole)}. Musí dobrat ${pocetKaretKDobirani} karet, nebo zahrát Sedmu.`);
+                    if (currentPlayerIsHuman) {
+                        liznoutKartuButton.disabled = false;
+                        aktualizujRukuHrace(); // Umožní hráči vybrat kartu
+                        seznamKaretHraceElement.firstElementChild?.focus();
+                        return; // Čekáme na tah hráče
+                    } else {
+                        // AI zahraje Sedmu
+                        const indexSedmy = currentPlayerHand.indexOf(maSedmu);
+                        currentPlayerHand.splice(indexSedmy, 1);
+                        odhazovaciBalicek.push(kartaNaStole);
+                        kartaNaStole = maSedmu;
+                        aktualniBarva = null;
+                        kartaNaStoleElement.textContent = popisKarty(kartaNaStole);
+                        kartaNaStoleElement.setAttribute('aria-label', `Na stole je ${popisKarty(kartaNaStole)}.`);
+                        zobrazZpravu(`AI zahrála Sedmu! Následující hráč musí dobrat ${pocetKaretKDobirani + 2} karet! AI má ${rukaAI.length} karet.`);
+                        playSedmaSound(); // Zvuk pro AI Sedmu
+                        pocetKaretKDobirani += 2; // Zvyšuje počet karet k dobírání
+                        // Tah se posouvá na dalšího hráče, který bude řešit nový počet karet
+                        naTahu = (naTahu === 'hrac') ? 'ai' : 'hrac'; // Přepne na dalšího hráče
+                        setTimeout(dalsiTah, 1000); // Další tah (s novým trestem)
+                        return;
+                    }
+                } else {
+                    // Nemá Sedmu, musí dobírat
+                    zobrazZpravu(`${currentPlayerName} nemá Sedmu a musí líznout ${pocetKaretKDobirani} karet.`);
+                    dobratKarty(currentPlayerHand, pocetKaretKDobirani, !currentPlayerIsHuman);
+                    pocetKaretKDobirani = 0; // Resetuje trest
+                    aktualizujRukuHrace(); // Pro hráče
+                    // Po dobrání karet se tah posouvá na dalšího hráče
+                    naTahu = (naTahu === 'hrac') ? 'ai' : 'hrac'; // Přepne na dalšího hráče
+                    setTimeout(dalsiTah, 1000); // Další tah (už bez trestu)
+                    return;
+                }
+            }
+
+            // 2. Řešení trestu Esa (pouze pokud nebyl trest Sedmy nebo byl vyřešen)
+            if (pocetTahuKPreskoceni > 0) {
+                const maEso = currentPlayerHand.find(karta => karta.hodnota === 'Eso');
+                if (maEso) {
+                    zobrazZpravu(`${currentPlayerName} je na tahu. Na stole je ${popisKarty(kartaNaStole)}. Musí stát ${pocetTahuKPreskoceni} tah(y), nebo zahrát Eso.`);
+                    if (currentPlayerIsHuman) {
+                        liznoutKartuButton.disabled = false;
+                        aktualizujRukuHrace(); // Umožní hráči vybrat kartu
+                        seznamKaretHraceElement.firstElementChild?.focus();
+                        return; // Čekáme na tah hráče
+                    } else {
+                        // AI zahraje Eso
+                        const indexEsa = currentPlayerHand.indexOf(maEso);
+                        currentPlayerHand.splice(indexEsa, 1);
+                        odhazovaciBalicek.push(kartaNaStole);
+                        kartaNaStole = maEso;
+                        aktualniBarva = null;
+                        kartaNaStoleElement.textContent = popisKarty(kartaNaStole);
+                        kartaNaStoleElement.setAttribute('aria-label', `Na stole je ${popisKarty(kartaNaStole)}.`);
+                        zobrazZpravu(`AI zahrála Eso! Následující hráč ztrácí ${pocetTahuKPreskoceni + 1} tah(y)! AI má ${rukaAI.length} karet.`);
+                        playEsoSound(); // Zvuk pro AI Eso
+                        pocetTahuKPreskoceni++; // Zvyšuje počet tahů k přeskočení
+                        // Tah se posouvá na dalšího hráče, který bude řešit nový trest
+                        naTahu = (naTahu === 'hrac') ? 'ai' : 'hrac'; // Přepne na dalšího hráče
+                        setTimeout(dalsiTah, 1000); // Další tah (s novým trestem)
+                        return;
+                    }
+                } else {
+                    // Nemá Eso, musí stát
+                    zobrazZpravu(`${currentPlayerName} ztrácí tah kvůli Esům.`);
+                    pocetTahuKPreskoceni--; // Sníží počet přeskočených tahů
+                    // Tah se posouvá na dalšího hráče
+                    naTahu = (naTahu === 'hrac') ? 'ai' : 'hrac'; // Přepne na dalšího hráče
+                    setTimeout(dalsiTah, 1000); // Další tah (už bez trestu, nebo s menším)
+                    return;
+                }
+            }
+
+            // 3. Normální tah (pokud nebyly žádné tresty nebo byly vyřešeny)
+            liznoutKartuButton.disabled = false; // Povolí tlačítko líznout kartu pro hráče
+            aktualizujRukuHrace(); // Vždy aktualizujeme ruku hráče pro správné zobrazení a fokus
+
+            const hasPlayableCard = currentPlayerHand.some(karta => jeKartaPlatna(karta, kartaNaStole));
+
+            if (currentPlayerIsHuman) {
+                if (hasPlayableCard) {
+                    zobrazZpravu('Jsi na tahu. Na stole je ' + (aktualniBarva ? `${aktualniBarva} barva` : popisKarty(kartaNaStole)) + '. Vyber kartu k zahrání nebo lízni.');
+                    seznamKaretHraceElement.firstElementChild?.focus();
+                } else {
+                    zobrazZpravu('Jsi na tahu. Nemáš žádnou platnou kartu k zahrání. Musíš si líznout kartu.');
+                    liznoutKartuButton.focus();
+                }
+            } else { // AI na tahu
+                setTimeout(tahAI, 1000); // Spustí tah AI po krátké prodlevě
+            }
+        }
+
+        /**
+         * Implementace jednoduché logiky tahu AI.
+         */
+        function tahAI() {
+            if (tahAIProbíhá) return;
+            tahAIProbíhá = true;
+
+            zobrazZpravu('AI přemýšlí...');
+
+            let zahranaKarta = null;
+            let indexZahraneKarty = -1;
+
+            // Priorita: 1. Přebít Sedmu/Eso, 2. Zahrát platnou kartu, 3. Líznout
+            // AI se snaží přebít Sedmu/Eso, pokud je to možné
+            if (pocetKaretKDobirani > 0) {
+                const maSedmu = rukaAI.find(karta => karta.hodnota === 'Sedma');
+                if (maSedmu) {
+                    zahranaKarta = maSedmu;
+                    indexZahraneKarty = rukaAI.indexOf(maSedmu);
+                }
+            } else if (pocetTahuKPreskoceni > 0) {
+                const maEso = rukaAI.find(karta => karta.hodnota === 'Eso');
+                if (maEso) {
+                    zahranaKarta = maEso;
+                    indexZahraneKarty = rukaAI.indexOf(maEso);
+                }
+            }
+
+            // Pokud AI nenašla speciální kartu k přebití, hledá normální platnou kartu
+            if (!zahranaKarta) {
+                // AI se snaží vybrat nejlepší kartu.
+                // Pro zjednodušení: AI preferuje zahrát kartu stejné hodnoty, pak stejné barvy.
+                // Svršek zahraje, pokud nemá jinou možnost nebo pokud chce změnit barvu strategicky.
+                let platneKarty = rukaAI.filter(karta => jeKartaPlatna(karta, kartaNaStole));
+
+                // Preferuje Sedmu nebo Eso, pokud je to možné
+                const sedma = platneKarty.find(k => k.hodnota === 'Sedma');
+                const eso = platneKarty.find(k => k.hodnota === 'Eso');
+                const svrsek = platneKarty.find(k => k.hodnota === 'Svršek');
+
+                if (sedma) {
+                    zahranaKarta = sedma;
+                    indexZahraneKarty = rukaAI.indexOf(sedma);
+                } else if (eso) {
+                    zahranaKarta = eso;
+                    indexZahraneKarty = rukaAI.indexOf(eso);
+                } else if (platneKarty.length > 0) {
+                    // Pokud má AI Svrška a žádnou jinou platnou kartu, zahraje Svrška
+                    // Jinak hraje první platnou kartu
+                    const nonSvrsekCards = platneKarty.filter(k => k.hodnota !== 'Svršek');
+                    if (nonSvrsekCards.length > 0) {
+                        zahranaKarta = nonSvrsekCards[0];
+                        indexZahraneKarty = rukaAI.indexOf(nonSvrsekCards[0]);
+                    } else if (svrsek) {
+                        zahranaKarta = svrsek;
+                        indexZahraneKarty = rukaAI.indexOf(svrsek);
+                    } else {
+                        // Mělo by se stát jen zřídka, pokud platneKarty.length > 0
+                        zahranaKarta = platneKarty[0];
+                        indexZahraneKarty = rukaAI.indexOf(platneKarty[0]);
+                    }
+                }
+            }
+
+
+            setTimeout(() => { // Simulace přemýšlení AI
+                if (zahranaKarta) {
+                    rukaAI.splice(indexZahraneKarty, 1);
+                    odhazovaciBalicek.push(kartaNaStole);
+                    kartaNaStole = zahranaKarta;
+                    aktualniBarva = null; // Resetuje změněnou barvu
+                    kartaNaStoleElement.textContent = popisKarty(kartaNaStole);
+                    kartaNaStoleElement.setAttribute('aria-label', `Na stole je ${popisKarty(kartaNaStole)}.`);
+                    zobrazZpravu(`AI zahrála ${popisKarty(zahranaKarta)}. AI má ${rukaAI.length} karet.`);
+
+                    // Zvuková odezva pro speciální karty
+                    if (zahranaKarta.hodnota === 'Sedma') {
+                        playSedmaSound();
+                    } else if (zahranaKarta.hodnota === 'Eso') {
+                        playEsoSound();
+                    } else if (zahranaKarta.hodnota === 'Svršek') {
+                        playSvrsekSound();
+                    }
+
+                    // Hlášení poslední karty
+                    if (rukaAI.length === 1) {
+                        zobrazZpravu('AI má poslední kartu!', true);
+                    }
+
+                    // Zpracování speciálních karet pro AI
+                    if (zahranaKarta.hodnota === 'Sedma') {
+                        pocetKaretKDobirani += 2;
+                        zobrazZpravu(`AI zahrála Sedmu! Následující hráč musí dobrat ${pocetKaretKDobirani} karet.`);
+                        tahAIProbíhá = false;
+                        naTahu = (naTahu === 'hrac') ? 'ai' : 'hrac'; // Přepne na hráče
+                        dalsiTah(); // Spustí tah hráče (který bude řešit trest)
+                        return;
+                    } else if (zahranaKarta.hodnota === 'Eso') {
+                        pocetTahuKPreskoceni += 1;
+                        zobrazZpravu(`AI zahrála Eso! Následující hráč ztrácí ${pocetTahuKPreskoceni} tah(y).`);
+                        tahAIProbíhá = false;
+                        naTahu = (naTahu === 'hrac') ? 'ai' : 'hrac'; // Přepne na hráče
+                        dalsiTah(); // Spustí tah hráče (který bude řešit trest)
+                        return;
+                    } else if (zahranaKarta.hodnota === 'Svršek') {
+                        // AI si vybere barvu, která je nejčastější v její ruce, nebo náhodnou
+                        const barvyVRuce = {};
+                        rukaAI.forEach(k => barvyVRuce[k.barva] = (barvyVRuce[k.barva] || 0) + 1);
+                        let nejcastejsiBarva = barvy[0]; // Výchozí barva
+                        let maxCount = -1; // Použijeme -1, protože 0 je platný počet karet
+                        
+                        // Najde barvu, které má AI nejvíce
+                        for (const barva in barvyVRuce) {
+                            if (barvyVRuce[barva] > maxCount) {
+                                maxCount = barvyVRuce[barva];
+                                nejcastejsiBarva = barva;
+                            }
+                        }
+                        // Pokud AI nemá žádné karty v ruce (vyhrála Svrškem), vybere náhodnou barvu
+                        if (rukaAI.length === 0) {
+                            nejcastejsiBarva = barvy[Math.floor(Math.random() * barvy.length)];
+                        }
+
+                        aktualniBarva = nejcastejsiBarva;
+                        kartaNaStoleElement.textContent = `${popisKarty(kartaNaStole)} (barva změněna na ${aktualniBarva})`;
+                        kartaNaStoleElement.setAttribute('aria-label', `Na stole je ${popisKarty(kartaNaStole)}, barva změněna na ${aktualniBarva}.`);
+                        zobrazZpravu(`AI zahrála Svrška a změnila barvu na ${aktualniBarva}.`);
+                    }
+                } else {
+                    // 2. Pokud AI nemá platnou kartu, dobírá
+                    zobrazZpravu(`AI nemá platnou kartu a líže si kartu.`);
+                    dobratKarty(rukaAI, 1, true); // isAI = true
+                    // Hlášení poslední karty po líznutí
+                    if (rukaAI.length === 1) {
+                        zobrazZpravu('AI má poslední kartu!', true);
+                    }
+                }
+                tahAIProbíhá = false;
+                naTahu = (naTahu === 'hrac') ? 'ai' : 'hrac'; // Předá tah hráči
+                dalsiTah();
+            }, 1000); // Prodleva 1 sekunda
+        }
+
+        /**
+         * Inicializuje novou hru.
+         */
+        function novaHra() {
+            hraBezi = true;
+            balicek = zamichejBalicek(vytvorBalicek());
+            rukaHrace = [];
+            rukaAI = [];
+            odhazovaciBalicek = [];
+            kartaNaStole = null;
+            naTahu = 'hrac'; // Hráč začíná
+            pocetKaretKDobirani = 0;
+            pocetTahuKPreskoceni = 0;
+            aktualniBarva = null;
+            vyberBarvyContainer.style.display = 'none';
+
+            // Rozdání 4 karet každému
+            dobratKarty(rukaHrace, 4, false); // isAI = false
+            dobratKarty(rukaAI, 4, true); // isAI = true
+
+            // Otočení první karty na stůl
+            kartaNaStole = balicek.pop();
+            kartaNaStoleElement.textContent = popisKarty(kartaNaStole);
+            kartaNaStoleElement.setAttribute('aria-label', `Na stole je ${popisKarty(kartaNaStole)}.`);
+
+            aktualizujRukuHrace();
+            liznoutKartuButton.disabled = false; // Povolí tlačítko líznout kartu
+            zobrazZpravu('Nová hra začala! Na tahu jsi ty. Na stole je ' + popisKarty(kartaNaStole) + '.');
+            
+            // Po nové hře přesuneme fokus na první kartu hráče, pokud má platnou kartu, nebo na líznout kartu
+            const hasPlayableCard = rukaHrace.some(karta => jeKartaPlatna(karta, kartaNaStole));
+            if (hasPlayableCard) {
+                seznamKaretHraceElement.firstElementChild?.focus();
+            } else {
+                liznoutKartuButton.focus();
+            }
+        }
+
+        /**
+         * Ukončí hru a oznámí vítěze.
+         * @param {string} vitez 'hrac', 'ai' nebo 'remiza'.
+         */
+        function ukonciHru(vitez) {
+            hraBezi = false;
+            liznoutKartuButton.disabled = true;
+            vyberBarvyContainer.style.display = 'none'; // Skryje výběr barvy
+
+            // Odstraní event listenery z karet, aby nebylo možné hrát po konci hry
+            Array.from(seznamKaretHraceElement.children).forEach(li => {
+                li.removeEventListener('click', () => {}); // Odebere existující listenery
+                li.removeEventListener('keydown', () => {}); // Odebere existující listenery
+                li.tabIndex = -1; // Odebere z tab orderu
+            });
+
+            if (vitez === 'hrac') {
+                zobrazZpravu('Gratuluji! Vyhrál jsi hru Prší!', true);
+            } else if (vitez === 'ai') {
+                zobrazZpravu('AI vyhrála hru Prší. Zkus to znovu!', true);
+            } else {
+                zobrazZpravu('Hra skončila remízou.', true);
+            }
+            novaHraButton.focus(); // Po skončení hry přesune fokus na tlačítko "Nová hra"
+        }
+
+        // Event Listenery
+        novaHraButton.addEventListener('click', novaHra);
+        liznoutKartuButton.addEventListener('click', hracLizneKarty);
+
+        // Inicializace při načtení stránky
+        document.addEventListener('DOMContentLoaded', () => {
+            zobrazZpravu('Vítej ve hře Prší! Hru ovládáš klávesou Tab pro pohyb mezi prvky a Enterem nebo mezerníkem pro jejich aktivaci. Klikni na "Nová hra" pro začátek.');
+            novaHraButton.focus(); // Přesune fokus na tlačítko "Nová hra"
+        });
+    </script>
+</body>
+</html>

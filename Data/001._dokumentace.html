@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kompletní dokumentace MyoBoxu</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Inter pro moderní a čitelný font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Vlastní styly pro tmavý, kontrastní a přístupný vzhled */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #000; /* Černé pozadí pro maximální kontrast */
+            color: #e2e8f0; /* Světlý text */
+            padding: 2rem;
+            line-height: 1.6;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .content-wrapper {
+            max-width: 900px; /* Větší šířka pro dokumentaci */
+            background-color: #1a1a1a; /* Tmavší šedá pro obsah */
+            border-radius: 1.5rem; /* Zaoblené rohy */
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.7); /* Výraznější stín */
+            padding: 2.5rem;
+            text-align: left;
+            width: 100%;
+            border: 1px solid #333; /* Jemný okraj */
+        }
+        h1 {
+            font-size: 3.2rem; /* Větší nadpis */
+            font-weight: 700;
+            color: #facc15; /* Žlutá barva pro nadpis */
+            margin-bottom: 2rem;
+            text-align: center;
+            text-shadow: 0 0 15px rgba(250, 204, 21, 0.6); /* Zářivější stín */
+        }
+        h2 {
+            font-size: 2.2rem; /* Větší podnadpis */
+            font-weight: 600;
+            color: #90cdf4; /* Světle modrá */
+            margin-top: 2.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #4a5568; /* Výraznější oddělovač */
+            padding-bottom: 0.5rem;
+        }
+        h3 {
+            font-size: 1.8rem; /* Menší nadpis pro sekce aplikací */
+            font-weight: 600;
+            color: #81e6d9; /* Azurová */
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px dashed #4a5568;
+            padding-bottom: 0.5rem;
+        }
+        p {
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            color: #cbd5e0;
+        }
+        details {
+            margin-bottom: 1.5rem;
+            border: 1px solid #333; /* Tmavší okraj */
+            border-radius: 12px;
+            padding: 1em 1.5em;
+            background-color: #222; /* Tmavší pozadí pro rozbalovací sekce */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+        details[open] {
+            background-color: #2a2a2a;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.5);
+        }
+        summary {
+            font-weight: 700;
+            cursor: pointer;
+            outline: none;
+            padding: 0.8em 0;
+            display: flex;
+            align-items: center;
+            font-size: 1.4rem; /* Větší písmo pro summary */
+            color: #facc15; /* Žlutá barva pro summary */
+        }
+        summary:focus {
+            outline: 3px solid #63b3ed; /* Modrý focus outline */
+            outline-offset: 3px;
+        }
+        summary::before {
+            content: "▶";
+            display: inline-block;
+            margin-right: 1rem;
+            transition: transform 0.2s ease;
+            color: #90cdf4; /* Modrá šipka */
+            font-size: 0.9em;
+        }
+        details[open] summary::before {
+            transform: rotate(90deg);
+        }
+        code, pre {
+            background-color: #000; /* Černé pozadí pro kód */
+            color: #4CAF50; /* Zelený text pro kód */
+            padding: 0.5em 0.8em;
+            border-radius: 6px;
+            font-family: 'Fira Code', 'Consolas', monospace; /* Monospace font */
+            font-size: 0.95em;
+            white-space: pre-wrap; /* Zalamování textu v pre */
+            word-break: break-word; /* Zalamování dlouhých slov */
+            border: 1px solid #444;
+        }
+        pre.license {
+            background: #0d0d0d; /* Ještě tmavší pozadí pro licenci */
+            padding: 1.5em;
+            border-radius: 10px;
+            font-size: 0.9em;
+            max-height: 400px; /* Omezení výšky pro licenci */
+            overflow-y: auto; /* Scrollbar pro dlouhou licenci */
+            border: 1px solid #222;
+        }
+        ul {
+            list-style-type: disc;
+            margin-left: 2rem;
+            padding-left: 0;
+            color: #cbd5e0;
+        }
+        ol {
+            list-style-type: decimal;
+            margin-left: 2rem;
+            padding-left: 0;
+            color: #cbd5e0;
+        }
+        li {
+            margin-bottom: 0.5rem;
+        }
+        a {
+            color: #63b3ed; /* Světle modrá pro odkazy */
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        a:hover {
+            color: #4299e1; /* Tmavší modrá při najetí */
+            text-decoration: underline;
+        }
+        p strong {
+            color: #e2e8f0; /* Bílý text pro silné zvýraznění */
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 3rem;
+            padding: 0.8rem 1.8rem;
+            background-color: #4c51bf;
+            color: #ffffff;
+            border-radius: 0.75rem;
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: 500;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+        }
+        .back-link:hover {
+            background-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+        }
+        .back-link:focus {
+            outline: 3px solid #81e6d9;
+            outline-offset: 3px;
+        }
+
+        /* Responzivní úpravy */
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+            .content-wrapper {
+                padding: 1.5rem;
+                border-radius: 1rem;
+            }
+            h1 {
+                font-size: 2.2rem;
+            }
+            h2 {
+                font-size: 1.8rem;
+            }
+            h3 {
+                font-size: 1.5rem;
+            }
+            summary {
+                font-size: 1.2rem;
+            }
+            .back-link {
+                padding: 0.6rem 1.2rem;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="content-wrapper">
+        <h1>📚 Kompletní dokumentace MyoBoxu</h1>
+
+        <details open>
+            <summary aria-label="Rozbalovací pole: Úvod a účel MyoBoxu">🔍 Úvod a účel MyoBoxu</summary>
+            <p>Vítejte v komplexním balíčku aplikací MyoBox, navržených pro efektivní a intuitivní správu vašeho podnikání, osobního života a volného času. MyoBox je sjednoceným řešením, které kombinuje nástroje pro maséry, osobní agendu a herní centrum do jednoho přehledného systému.</p>
+            <p>MyoBox je navržen s důrazem na jednoduchost, přehlednost a maximální přístupnost, zejména pro ovládání klávesnicí a pro práci se čtečkami obrazovky. Funguje lokálně na vašem zařízení, avšak pro správnou funkčnost některých aplikací je potřeba připojení k internetu pro načtení externích knihoven.</p>
+            
+            <p>Dlouho jsem hledal nástroj nebo službu, díky které bych mohl spravovat moji masérnu. Excel je sice mocný nástroj, ale já chtěl něco víc. Chtěl jsem nástroj, který my práci opravdu ulehčí. Otestoval jsem bezpočet nástrojů, programů a služeb, abych zjistil jednu zásadní informaci. Žádný vhodný nástroj, program nebo služba prostě není.</p>
+            
+            <p>Většinou to probíhalo přesně takto: Radost z nalezení vhodného nástroje. Konečně něco, co my dobře poslouží. Pak tvrdý pád na zem, při delším testování. Nakonec jsem zjistil, že to není přesně to, co potřebuji. To my vydrželo až do patnáctého pokusu. Pak už jsem jen testoval, a nic od toho nečekal. Když jsem vyzkoušel asi dvacátou službu, tak jsem si řekl, že by to už stačilo.</p>
+            
+            <p>Rozhodl jsem se, že si nechám vytvořit aplikaci přímo pro mé potřeby. Jak na to ale jít? Programovat neumím, a vůbec tomu nerozumím. Nemám s tím zkušenosti, a nevím jak začít. Má zkušenost byla jen tehdy, kdy jsem si z internetu kopíroval html animace, a pak je dával na svůj, ne příliš kvalitní blog. To byla celá má zkušenost s kódem.</p>
+            
+            <p>Nakonec spatřila světlo světa umělá inteligence. Všichni jsme se s ní bavili, a všichni jsme z ní byli úplně odrovnaní. Pak jsem jí kompletně popsal mojí vizi aplikace pro správu masérny. Dali jsme do hromady kompletní popis, funkce a specifikace. Ty jsem pak odeslal několika vývojářům. Myslel jsem si, že my někdo odpoví, a začne na mé vizi pracovat. Opak se ale stal pravdou. Nikdo se my ani po čtvrt roce neozval.</p>
+            
+            <p>Naštvaně jsem dal svůj projekt k ledu s tím, že excel je přece jen tou nejlepší volbou. Na nějaký čas jsem to úplně vypustil z hlavy, a nakonec na to i zapomněl. Mezi tím se umělá inteligence každým dnem zlepšovala a zlepšovala. Přibyli i další, a tím i další možnosti využití. Ze zapomenutých koutů své mysli jsem vyhrabal můj starý projekt, a rozhodl se ho zase oživit. Tentokrát jsem si ale řekl, že to udělám úplně jinak. S Chat GPT jsme začali plánovat projekt JSM, tedy jednoduchý systém pro maséry. Nepoužili jsme nic jako python, c++, ani žádné další programovací jazyky. Rozhodl jsem se, že to postavíme na html, css a java scriptech. Těmto výrazům moc nerozumím, ale trochu je chápu. Představme si to jako tvorbu člověka: Html tvoří jeho kostru. Css mu dodá svaly, šlachy, orgány, a vše ostatní. Nyní máme člověka potaženého kůží. Nyní je potřeba dát mu mozek. No, a k tomu slouží java script. Java scripty zajišťují funkčnost aplikací. Vývojáři si teď možná ťukají na čelo, a říkají si. Co to ten člověk sakra mele? Vždyť je to úplná blbost! V tom případě se chci omluvit. Rozumím tomu jako koza petrželi, a tohle je jediný příměr, který mě napadl.</p>
+            
+            <p>První krůčky: Nejprve jsme začali tvořit aplikace klienti, účetnictví, a další. Porodní bolesti žádné nebyli, a první verze spatřili světlo světa. Byli to jednoduché aplikace, které ale dobře splnili účel. Potom jsme uvažovali nad tím, jak se budou data ukládat. Nejprve nás napadlo, ukládat to do local storage. Data se tak ukládají do cache prohlížeče, tak že jsou vždy k dispozici. Co když si ale lidi budou chtít svá data zálohovat? Co když nad nimi chtějí mýt plnou kontrolu? Nakonec nás napadlo, ukládat vše do json souboru.</p>
+            
+            <p>Json soubor zajistí přenositelnost, a plnou kontrolu nad daty. Soubory si jednoduše zkopírujete na přenosné médium, a použijete je tam, kde potřebujete. Následně jsme dolaďovali a vylepšovali konkrétní funkce a vzhled. Po týdnu byl JSM hotový, včetně dashboardu, licence a dokumentace.</p>
+            
+            <p>Jak jsem přišel na JSM? Nad tím jsme s Chat GPT kolaborovali asi hodinu. Nejprve nás napadli názvy jako. Hmat OS, Masérna, Moje masérna, Masistent, a další návrhy. Nakonec jsem řekl ne! Projekt se bude jmenovat JSM. Název byl na světě. To ale znamenalo, že musíme přepsat název v každém souboru. Pracovní název byl MStudio, tedy masérské studio. Jen že tento název už byl zabraný.</p>
+            
+            <p>Další týden jsme přemýšleli nad tím, jak to vylepšit. Přidali jsme pár věcí, ale nic zvláštního. Nakonec nám zbyla jen jedna věc. Prohlásit, že je JSM kompletně hotový. Potom přišlo zkoušení, testování a opravy chyb. S radostí jsem své dílo nahrál na GitHub, a hrdě ho nabídnul světu. Potom si mě našla neúprosná myšlenka. Chtěl jsem jí zapudit, jen že ta mrška na mě neustále dorážela. Nakonec jsem si řekl, že to není vůbec k zahození. Vytvoříme úplně stejný projekt jako JSM, ale čistě pro osobní potřebu.</p>
+            
+            <p>Tak tedy začal návrh nového projektu. Tentokrát to bylo naprosto jednoduché. Jednoduše jsme vzali to, co jsme už měli. Vyhodili z toho to, co sloužilo pro práci, a předělali to pro osobní použití. Projekt byl hotový zhruba za dva dny. Základ jsme už měli, a tak to šlo rychle. Pro tento projekt jsme vybrali podle mě trošku nešťastný název. Je to zkratka pro Jednoduchý Osobní Systém, zkráceně JOS. Určitě se mnou budete souhlasit, že to není nic moc, a že jsme si s názvem měli dát víc práce.</p>
+            
+            <p>Dost mě unavilo, přepínat se mezi projekty. Jednoho dne jsem si řekl, že by to chtělo spojit. Ano. Spojíme oba malé projekty, do jednoho většího celku. Nový projekt dostal svůj pracovní název. Jak jinak, než spojení projektů. Moje kreativita je prostě neuvěřitelná. Začali jsme tedy spojovat oba projekty do jednoho.</p>
+            
+            <p>Všechny malé aplikace jsme spojili do větších celků, a tím se i zlepšila funkčnost. Už jste se nemuseli přepínat mezi aplikacemi, kvůli každé maličkosti. Z aplikací klienti, ceník, tabulky a poukazy, vznikla větší aplikace. Ta se jmenuje Masérna. Ta obsahuje všechny tyto aplikace. Jsou o dost vylepšené, a dobře to funguje. Navíc máte vše při ruce, a to jsem potřeboval.</p>
+            
+            <p>Potom jsme dali dohromady aplikace účetnictví a sklad. Je to pěkná a přehledná aplikace. Pojmenoval jsem jí jako Finanční správce. Následně jsme vzali aplikace poznámky, todo-list, plánovač a nápady. To jsme dali do sebe, a vytvořili tak Centrální záznamník. Pak nastala náročnější úprava. Měli jsme aplikaci pro generování dárkových poukazů, a aplikaci generátor QR kódů. Spojit tyto aplikace do hromady a zajistit jejich správnou funkčnost bylo náročné.</p>
+            
+            <p>Na konec přišel na řadu projekt JOS, Jednoduchý Osobní Systém. Vzali jsme všechny aplikace, a přidali je do toho nového projektu. Veškeré aplikace z obou projektů byli v jedné složce. Museli jsme je roztřídit do pod složek, a správně očíslovat. Na řadu přišla dokumentace, a úprava rozcestníku. To už jsem delší dobou pracoval s Gemini. Ten si lépe udrží kontext, a umí lépe pracovat s kódem. Dashboard jsme dělali asi na třikrát, protože jsem nebyl s ničím spokojený.</p>
+            
+            <p>Dílo se ale povedlo, a dashboard spatřil světlo světa. Ještě jsme ho vylepšovali a dolaďovali. Přidali jsme jednoduchou animaci, a uvítací hlášku při načtení. Původně to mělo fungovat takto. Jakmile jste si načetli stránku, tak se měl ozvat tón, a potom "Welcome to MyoBox!" Jen že to se ale nestalo. Internetové prohlížeče blokují automatické přehrávání audia a videa. Proto jsme tam museli dát kličku. Když pohnete myší, nebo stisknete libovolnou klávesu, tak se zvuk přehraje. Lokálně na mém počítači to nefunguje. Jakmile ale MyoBox bude na webu, tak to už fungovat bude. Jak jsme toho docílili? Nahrávku jsme převedli do Base64. To znamená, že se celý audio soubor a jeho obsah, převede do dlouhého kódu, který se pak vloží na příslušné místo na stránce. Tím nemusíme využívat jinou službu, nebo možnosti.</p>
+            
+            <p>Nojo, ale chtělo by to ještě něco. Chtělo by to něco pro volný čas. Chtělo by to nějaké hry. Proto jsme vytvořili generátor osmisměrek. Tam si můžete napsat slova, a oddělit je čárkou. Pak si vyberete velikost hrací plochy, a dáte generovat. Hra je plně přístupná pro zrakově handicapované. V normálních osmisměrkách se slovo označuje tahem. To v přístupné verzi nebylo možné. Proto jsme to udělali jednodušeji. Slova se neoznačují tahem. Označuje se tím, že postupně klikáte na jednotlivá písmena. Navíc je tam nápověda, která vám prozradí to, kde je první písmeno dalšího slova. Například. Slovo "Motýl" začíná na pátém řádku, a osmém sloupci.</p>
+            
+            <p>Osmisměrky jsou super, ale není to pro každého. Chce to další hru. Na řadě byla hra, 2048. Naštěstí jsem na internetu našel kompletní HTML, CSS a JS kódy. Ty byly k dispozici pro volné použití. Přidali jsme mu přístupné prvky, a zlepšili hratelnost. Navíc jsme přidali kontrastní vzhled. Čtečka obrazovky vám hlásí vše, co se ve hře děje. Ovládání je maličko krkolomné. Tabulátorem se musíte dostat do herního pole, a nakonec používat šipky. Když chcete z herního pole vyjít, tak použijete Tab, nebo Shift+Tab.</p>
+            
+            <p>Logické hry máme za sebou, ale chce to něco víc. Napadlo mě vytvořit textovou adventuru, jen že ty už dnes skoro nikdo nehraje. Pokud se mýlím, tak se omlouvám. Nenapadlo mě nic jiného, než že vytvoříme hru Prší. Hra je naprosto přístupná, a všechno vám hlásí. Není tam žádná grafika, jen text a zvuky. Ovládá se šipkami a Tabulátorem.</p>
+            
+            <p>Chtěl jsem to uzavřít něčím epesním, a vytvořit další karetní hru. Tato karetní hra se hraje v kasínech, a jmenuje se Blackjack. Můžete ji znát jako Oko bere, nebo Oko 21. Tady si musíte dát pozor. Čtečka je hodně výřečná. Není dobré ji přerušovat, protože byste ztratili informace o dění. Hra funguje naprosto dokonale, a vydrží vám na dlouhé hodiny. Nebo aspoň minuty.</p>
+            
+            <p>Všechny tyto hry se dají hrát i na mobilu. Akorát hra 2048 tam moc nejde. Vidící si ji v pohodě zahraje. Handicapovaný už ale ne. Čtečka na mobilu nechce nic číst. Navíc se to nedá hrát se zapnutým TalkBackem, nebo VoiceOverem. Na Windows, macOS a Linuxu je to v pohodě hratelné. Na zlepšení se pracuje.</p>
+            
+            <p>V dashboardu tedy přibyl další sloupec, Herní zóna. Posledním krokem bylo vyplnit poslední sloupec, Dokumentace. Odkazy jsem tam už sice měl, ale byly prázdné. Kdybyste je otevřeli, tak tam nic nenajdete. První odkaz se jmenuje Stručný návod k použití. Ten jsem ale zase rychle odstranil, protože byl nadbytečný. Návody najdete zde v dokumentaci. Hned pod tím je Kompletní dokumentace MyoBoxu. Na té nyní pracuji, a vy ji zrovna čtete. Aspoň tedy doufám.</p>
+            
+            <p>Upletl jsem si na sebe pořádný bič. Hned pod tím je totiž odkaz, který se jmenuje Tutoriály, již brzy. Tam budou YouTubová videa, která vás naučí s MyoBoxem pracovat. Možná to nebude již brzy, ale budu se snažit. Pod tím jsou tři odkazy: Poděkování, Ke stažení, a Rozvoj MyoBoxu.</p>
+            
+            </p>
+        </details>
+
+        <details>
+            <summary aria-label="Rozbalovací pole: Klíčové vlastnosti MyoBoxu">🔑 Klíčové vlastnosti MyoBoxu</summary>
+            <p>MyoBox je navržen s důrazem na modularitu a přístupnost. Zde je přehled všech jeho součástí a jejich klíčových funkcí:</p>
+
+            <h2>Pracovní prostor</h2>
+            <p>Aplikace pro správu vašeho podnikání a profesionálních aktivit.</p>
+            <h3>Masérna</h3>
+            <p>Komplexní systém pro správu masérny. Umožňuje vést záznamy o klientech, jejich masážích, spravovat ceník a evidovat nákupy dárkových poukazů. Tato aplikace vznikla spojením dřívějších aplikací Klienti, Ceník, Tabulky a Poukazy. Jsou o dost vylepšené a dobře fungují. Navíc máte vše při ruce.</p>
+            <ul>
+                <li>**Správa klientů:** Přidávání, úprava a mazání klientů s detaily jako ID, jméno, telefon a diagnóza.</li>
+                <li>**Historie masáží:** Eviduje všechny provedené masáže s datem, časem, metodou, platbou a částkou. Automaticky se propisuje do celkové historie klienta.</li>
+                <li>**Ceník:** Umožňuje přidávat, upravovat a mazat položky ceníku s rokem, typem, názvem, délkou a cenou. Sleduje počet a celkovou hodnotu prodaných služeb.</li>
+                <li>**Správa poukazů:** Eviduje nákupy poukazů a jednotlivé poukazy s jejich typem, hodnotou, datem vystavení a využití.</li>
+                <li>**Poznámky ke klientům:** Přidávání a správa poznámek ke konkrétním klientům.</li>
+                <li>**Export/Import dat:** Možnost exportovat a importovat všechna data masérny do/z JSON souboru pro zálohování a přenos.</li>
+                <li>**Filtrování a vyhledávání:** Globální filtr pro rychlé vyhledávání záznamů ve všech tabulkách.</li>
+            </ul>
+
+            <h3>Finanční správce</h3>
+            <p>Aplikace pro sledování osobních a firemních financí. Umožňuje evidovat příjmy a výdaje, sledovat měsíční a roční přehledy a spravovat skladové položky. Tato aplikace vznikla spojením dřívějších aplikací Účetnictví a Sklad, což z ní dělá pěknou a přehlednou aplikaci.</p>
+            <ul>
+                <li>**Přehled transakcí:** Zaznamenávání data, typu (příjem/výdaj), částky a popisu transakce.</li>
+                <li>**Měsíční a roční přehledy:** Automatické generování souhrnů příjmů, výdajů a rozdílů za jednotlivé měsíce a roky.</li>
+                <li>**Správa skladu:** Přidávání, úprava a sledování položek na skladě (název, jednotka, množství, minimální množství pro upozornění).</li>
+                <li>**Export/Import dat:** Možnost exportovat a importovat finanční data do/z JSON souboru.</li>
+                <li>**Filtrování:** Globální filtr pro vyhledávání transakcí a skladových položek.</li>
+            </ul>
+
+            <h3>Generátor poukazů a QR kódů</h3>
+            <p>Nástroj pro tvorbu vizuálně atraktivních dárkových poukazů a generování QR kódů. Spojení těchto dvou aplikací bylo náročné, ale nyní fungují správně. Ideální pro marketingové účely.</p>
+            <ul>
+                <li>**Přizpůsobitelný design poukazů:** Nastavení textů (název firmy, obdarovaný, služba, hodnota, platnost, věnování, doplňující info), barev, fontů a pozadí.</li>
+                <li>**Nahrávání obrázků:** Možnost nahrát vlastní logo, doplňkový obrázek a vlastní pozadí.</li>
+                <li>**Přednastavené šablony:** Výběr z předdefinovaných šablon (DL, A4, sezónní gradienty).</li>
+                <li>**Generování QR kódů:** Vytvoření QR kódu z libovolného textu nebo URL a jeho vložení přímo na poukaz. Možnost stáhnout QR kód samostatně.</li>
+                <li>**Export poukazu:** Stažení vygenerovaného poukazu jako PNG nebo PDF.</li>
+                <li>**Export/Import dat a nastavení:** Uložení všech dat poukazu a nastavení generátoru do/z JSON souboru pro opakované použití.</li>
+            </ul>
+
+            <h2>Osobní prostor</h2>
+            <p>Aplikace pro organizaci vašeho osobního života a každodenních úkolů. Tento projekt, dříve známý jako JOS (Jednoduchý Osobní Systém), vznikl z potřeby vytvořit systém čistě pro osobní potřeby, a to velmi rychle díky využití existujících základů.</p>
+            <h3>Osobní záznamník</h3>
+            <p>Centrální místo pro vaše poznámky, úkoly, události a nápady. Umožňuje efektivní správu a filtrování všech vašich záznamů. Vznikl spojením aplikací Poznámky, To-Do List a Plánovač.</p>
+            <ul>
+                <li>**Poznámky:** Přidávání, úprava a správa textových poznámek.</li>
+                <li>**To-Do Listy:** Vytváření a správa více to-do listů s úkoly. Každý úkol má popis, termín a prioritu, lze ho označit jako splněný.</li>
+                <li>**Události:** Plánování událostí s datem, časem, názvem a popisem.</li>
+                <li>**Nápady:** Zaznamenávání nápadů s názvem, popisem a kategorií.</li>
+                <li>**Filtrování a vyhledávání:** Globální filtr pro rychlé vyhledávání napříč všemi typy záznamů.</li>
+                <li>**Export/Import dat:** Možnost exportovat a importovat všechna data záznamníku do/z JSON souboru.</li>
+            </ul>
+
+            <h3>Osobní finance</h3>
+            <p>Jednoduchý nástroj pro sledování osobních příjmů a výdajů. Poskytuje přehledné měsíční a roční souhrny.</p>
+            <ul>
+                <li>**Přehled transakcí:** Zaznamenávání data, typu (příjem/výdaj), částky a popisu transakce.</li>
+                <li>**Měsíční a roční přehledy:** Automatické generování souhrnů příjmů, výdajů a rozdílů za jednotlivé měsíce a roky.</li>
+                <li>**Export/Import dat:** Možnost exportovat a importovat finanční data do/z JSON souboru.</li>
+                <li>**Filtrování:** Globální filtr pro vyhledávání transakcí.</li>
+            </ul>
+
+            <h3>Knihovna</h3>
+            <p>Správce pro vaši sbírku audioknih, e-knih a fyzických knih. Umožňuje evidovat detaily a přidávat poznámky.</p>
+            <ul>
+                <li>**Správa knih:** Přidávání, úprava a mazání záznamů o knihách (název, autor, interpret).</li>
+                <li>**Oblíbené:** Možnost označit knihy jako oblíbené.</li>
+                <li>**Anotace a poznámky:** Přidávání podrobných anotací a osobních poznámek ke každé knize.</li>
+                <li>**Filtrování a vyhledávání:** Rychlé vyhledávání podle názvu, autora nebo interpreta.</li>
+                <li>**Export/Import dat:** Možnost exportovat a importovat data knihovny do/z JSON souboru.</li>
+                <li>**Export do TXT:** Export detailů jednotlivé knihy do TXT souboru.</li>
+            </ul>
+
+            <h3>Kalkulačka</h3>
+            <p>Přístupná kalkulačka pro základní matematické operace. Navržena s vysokým kontrastem a podporou klávesnice.</p>
+            <ul>
+                <li>**Základní operace:** Sčítání, odčítání, násobení, dělení, procenta, desetinná místa.</li>
+                <li>**Vysoký kontrast:** Černé pozadí, bílé písmo a výrazné ohraničení pro optimální čitelnost.</li>
+                <li>**Přepínání motivů:** Možnost přepínat mezi tmavým a světlým motivem.</li>
+                <li>**Klávesnicové ovládání:** Plná podpora ovládání pomocí klávesnice (čísla, operátory, Enter, Backspace, Escape).</li>
+                <li>**Hlasová odezva:** Oznámení stisknutých kláves a výsledků pro čtečky obrazovky.</li>
+            </ul>
+
+            <h3>Časovač</h3>
+            <p>Univerzální časovač s režimy odpočtu a stopek, navržený pro snadné použití a přístupnost.</p>
+            <ul>
+                <li>**Režimy:** Odpočet (countdown) a Stopky (stopwatch).</li>
+                <li>**Přednastavené časy:** Rychlé nastavení odpočtu na 30, 60, 90 nebo 120 minut.</li>
+                <li>**Vlastní čas:** Možnost zadat vlastní počet minut pro odpočet.</li>
+                <li>**Ovládání:** Tlačítka Start/Pauza, Reset, Zastavit.</li>
+                <li>**Zvukový alarm:** Výchozí syntetický alarm po skončení odpočtu.</li>
+                <li>**Vlastní zvuk alarmu:** Možnost nahrát vlastní zvukový soubor pro alarm.</li>
+                <li>**Hlasová odezva:** Oznámení stavu časovače, zbývajícího/uplynulého času a alarmu pro čtečky obrazovky.</li>
+                <li>**Klávesnicové zkratky:** Ovládání pomocí klávesnice (mezerník/Enter pro start/pauzu, Escape pro reset, šipky pro přepínání režimů).</li>
+                <li>**Výřečný režim:** Volitelný režim pro podrobnější hlasovou odezvu (např. každou minutu nebo posledních 10 sekund odpočtu).</li>
+            </ul>
+
+            <h2>Herní zóna</h2>
+            <p>Zábavné a přístupné hry pro volný čas.</p>
+            <h3>Osmisměrka</h3>
+            <p>Generátor a hra osmisměrek s plnou podporou přístupnosti. Hra je plně přístupná pro zrakově handicapované. Slova se neoznačují tahem, ale postupným klikáním na jednotlivá písmena. Navíc je tam nápověda, která vám prozradí, kde je první písmeno dalšího slova (např. Slovo "Motýl" začíná na pátém řádku, a osmém sloupci).</p>
+            <ul>
+                <li>**Generování mřížky:** Vytvoření osmisměrky z vlastních slov s volitelnou velikostí mřížky.</li>
+                <li>**Hledání slov:** Interaktivní výběr písmen na mřížce.</li>
+                <li>**Zvuková odezva:** Zvukové efekty pro výběr písmen a nalezení slova.</li>
+                <li>**Nápověda:** Funkce nápovědy, která zvýrazní první písmeno nenalezeného slova.</li>
+                <li>**Reset:** Možnost resetovat aktuální kolo.</li>
+                <li>**Export/Import kol:** Uložení a načtení herních kol do/z JSON souboru.</li>
+                <li>**Klávesnicové ovládání:** Plná podpora klávesnice pro navigaci a výběr.</li>
+                <li>**České znaky:** Podpora českých diakritických znaků v mřížce.</li>
+            </ul>
+
+            <h3>2048 – přístupná verze</h3>
+            <p>Populární logická hra 2048, kompletně přizpůsobená pro zrakově postižené uživatele. Naštěstí jsem na internetu našel kompletní HTML, CSS a JS kódy, které byly k dispozici pro volné použití. Přidali jsme jim přístupné prvky a zlepšili hratelnost. Navíc jsme přidali kontrastní vzhled. Čtečka obrazovky vám hlásí vše, co se ve hře děje. Ovládání je maličko krkolomné: Tabulátorem se musíte dostat do herního pole, a nakonec používat šipky. Když chcete z herního pole vyjít, tak použijete Tab, nebo Shift+Tab. Všechny hry se dají hrát i na mobilu, akorát hra 2048 tam moc nejde. Vidící si ji v pohodě zahraje. Handicapovaný už ale ne. Čtečka na mobilu nechce nic číst. Navíc se to nedá hrát se zapnutým TalkBackem, nebo VoiceOverem. Na Windows, macOS a Linuxu je to v pohodě hratelné. Na zlepšení se pracuje.</p>
+            <ul>
+                <li>**Vizuální a zvuková odezva:** Dlaždice s vysokým kontrastem a zvukové efekty pro pohyb a spojování dlaždic.</li>
+                <li>**Hlasová odezva:** Oznámení pohybu dlaždic, spojování, nových dlaždic, skóre a stavu hry (výhra/prohra) pro čtečky obrazovky.</li>
+                <li>**Klávesnicové ovládání:** Hra ovladatelná šipkami.</li>
+                <li>**Dotykové ovládání (swipe):** Podpora swipe gest na mobilních zařízeních s vizuální zpětnou vazbou.</li>
+                <li>**Režimy:** Normální a Výřečný režim pro úroveň hlasové odezvy.</li>
+                <li>**Uložení/Načtení hry:** Možnost uložit a načíst aktuální stav hry.</li>
+                <li>**Souhrn stavu desky:** Klávesová zkratka pro přečtení souhrnu aktuálního stavu herní desky.</li>
+            </ul>
+
+            <h3>Blackjack pro zrakově handicapované</h3>
+            <p>Klasická karetní hra Blackjack proti dealerovi, optimalizovaná pro přístupnost. Tato karetní hra se hraje v kasínech, a jmenuje se Blackjack. Můžete ji znát jako Oko bere, nebo Oko 21. Tady si musíte dát pozor. Čtečka je hodně výřečná. Není dobré ji přerušovat, protože byste ztratili informace o dění. Hra funguje naprosto dokonale, a vydrží vám na dlouhé hodiny. Nebo aspoň minuty.</p>
+            <ul>
+                <li>**Hlasová odezva:** Podrobné oznámení rozdávaných karet, skóre hráče a dealera, průběhu hry a výsledků.</li>
+                <li>**Klávesnicové ovládání:** Plná podpora klávesnice pro všechny herní akce (Vzít kartu, Zůstat, Double Down, Nová hra).</li>
+                <li>**Základní pravidla:** Implementace základních pravidel Blackjacku (rozdávání, hit, stand, double down, dealerova pravidla).</li>
+                <li>**Uložení/Načtení hry:** Možnost uložit a načíst aktuální stav hry.</li>
+                <li>**Vysoký kontrast:** Přehledné zobrazení karet a skóre.</li>
+            </ul>
+
+            <h3>Hra Prší - Přístupná verze</h3>
+            <p>Populární karetní hra Prší proti počítači (AI), navržená s důrazem na přístupnost. Hra je naprosto přístupná, a všechno vám hlásí. Není tam žádná grafika, jen text a zvuky. Ovládá se šipkami a Tabulátorem.</p>
+            <ul>
+                <li>**Hlasová odezva:** Oznámení karet na stole, karet v ruce hráče, tahů AI, speciálních pravidel (Sedma, Eso, Svršek) a výsledků hry.</li>
+                <li>**Klávesnicové ovládání:** Plná podpora klávesnice pro výběr karet k zahrání a líznutí karty.</li>
+                <li>**Navigace šipkami:** Možnost navigace mezi kartami v ruce hráče a tlačítky pro výběr barvy pomocí šipek.</li>
+                <li>**Zvukové efekty:** Zvuková odezva pro zahrání karet, líznutí a speciální karty.</li>
+                <li>**Pravidla:** Implementace základních pravidel Prší, včetně Sedmy (líznout 2), Esa (stát tah) a Svrška (změna barvy).</li>
+                <li>**AI protihráč:** Jednoduchá umělá inteligence pro hru proti počítači.</li>
+                <li>**Potvrzení nové hry:** Dialog pro potvrzení před začátkem nové hry.</li>
+            </ul>
+        </details>
+
+        <details>
+            <summary aria-label="Rozbalovací pole: Struktura MyoBoxu">🗂 Struktura MyoBoxu</summary>
+            <p>MyoBox je organizován do hlavní složky, která obsahuje:</p>
+            <ul>
+                <li><code>index.html</code> – hlavní dashboard pro spuštění aplikací.</li>
+                <li><code>Data/</code>: Obsahuje veškeré aplikace a data.
+                    <ul>
+                        <li><code>1. Aplikace/</code>: Obsahuje všechny HTML soubory jednotlivých aplikací (pojmenované 01. až 06. pro dokumentaci, 01. až 04. pro pracovní prostor, 01. až 05. pro osobní prostor, 01. až 04. pro herní zónu).</li>
+                        <li><code>2. Json data/</code>: Tato složka je určena pro ukládání všech vašich JSON souborů.
+                            <ul>
+                                <li><code>Zálohy json/</code>: Podsložka pro kompletní zálohy všech JSON souborů, včetně verzování.</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+                <li><code>dokumentace.html</code> – tento soubor s kompletní dokumentací MyoBoxu.</li>
+            </ul>
+            <p>Soubory jako <code>LICENSE</code> a původní <code>čti mě</code> byly integrovány přímo do této dokumentace pro lepší přehlednost.</p>
+        </details>
+
+        <details>
+            <summary aria-label="Rozbalovací pole: Jak začít s MyoBoxem">🚀 Jak začít s MyoBoxem?</summary>
+            <p>MyoBox je k dispozici jako zip soubor. Zkopírujte si ho na místo, kde ho chcete mít (například do dokumentů nebo na plochu). Rozbalte zip archiv. Ve složce, kde jste ho rozbalili, se bude nyní nacházet složka s názvem MyoBox.</p>
+            <p>Pro spuštění otevřete soubor <code>index.html</code>, a to přímo v hlavní složce MyoBoxu. Tím se vám otevře stránka s dashboardem.</p>
+            <p>Dashboard vám nabídne přehledný seznam všech aplikací. Pro navigaci použijte klávesu Tab a pro spuštění aplikace Enter.</p>
+            <p>MyoBox můžete rozběhnout obrazně řečeno i na kalkulačce. Aplikace jsou jednoduché, malé a nezabírají moc místa. Nezáleží na tom, na jakém systému je budete používat. Můžete je používat na všem, co má webový prohlížeč – Windows, macOS, Linux, Android i iOS. Jen si průběžně ukládejte JSON soubory, ať nepřijdete o žádná data.</p>
+            <p>Pro detailní instrukce k používání jednotlivých aplikací klikněte na odkaz "Návody ke všem aplikacím" v sekci "Dokumentace" na dashboardu.</p>
+        </details>
+
+        <details>
+            <summary aria-label="Rozbalovací pole: Práce s daty v MyoBoxu">💾 Práce s daty v MyoBoxu (DŮLEŽITÉ!)</summary>
+            <p>Data v aplikacích MyoBoxu se neukládají automaticky v prohlížeči ani na žádném internetovém serveru.</p>
+            <p>Pro zachování vašich dat je nezbytné je pravidelně exportovat. Každá aplikace vám umožňuje svá data exportovat do JSON souboru.</p>
+            <p>Pokud chcete s daty pracovat později nebo je přenést na jiné zařízení, můžete je kdykoliv importovat zpět z uloženého JSON souboru.</p>
+            <p>Tento systém vám dává plnou kontrolu nad vašimi daty a zajišťuje jejich soukromí, protože zůstávají pouze ve vašem držení.</p>
+            <p>Pamatujte, že pokud aplikaci zavřete bez exportu dat, nebo pokud dojde k chybě prohlížeče, neuložená data budou ztracena. Proto je pravidelné exportování klíčové!</p>
+        </details>
+
+        <details>
+            <summary aria-label="Rozbalovací pole: Použití MyoBoxu na mobilu">📱 Použití MyoBoxu na mobilu</summary>
+            <p>Pokud budete používat MyoBox na mobilu (Android, iOS), je důležité vědět, že aplikace nelze spouštět přímo z dashboardu (<code>index.html</code>), pokud je celý MyoBox otevřen lokálně z disku.</p>
+            <p><strong>Proč se to děje (laicky řečeno):</strong></p>
+            <p>Když otevřete HTML soubor přímo z disku na počítači, prohlížeč má volný přístup k dalším souborům ve stejné složce (nebo podsložkách). Na mobilu a v jejich prohlížečích jsou ale bezpečnostní pravidla mnohem přísnější. Mobilní operační systémy a prohlížeče často považují lokální soubory za "izolované" a nechtějí jim dovolit otevírat jiné lokální soubory z bezpečnostních důvodů. Je to jako byste měli každý soubor v malé, oddělené krabičce a nemohly se navzájem "vidět". Proto se dashboard sice spustí, ale odkazy na další aplikace už nefungují, protože prohlížeč jim nedovolí k těm souborům přistoupit.</p>
+            <p><strong>Řešení pro mobilní použití:</strong></p>
+            <p>Na mobilu budete muset jednotlivé aplikace spouštět přímo z jejich souborů ve složce <code>Data/1. Aplikace/</code> (např. <code>Data/1. Aplikace/01. maserna.html</code>), nikoli přes dashboard.</p>
+        </details>
+
+        <details>
+            <summary aria-label="Rozbalovací pole: Návody a tutoriály">📺 Návody a tutoriály</summary>
+            <p>Tato sekce bude v budoucnu obsahovat podrobné video návody k používání jednotlivých aplikací MyoBoxu. Cílem je poskytnout vizuální a zvukovou podporu pro všechny uživatele, včetně těch se zrakovým postižením.</p>
+            <p>Zde najdete odkazy na YouTube videa, která vás provedou krok za krokem všemi funkcemi a možnostmi MyoBoxu.</p>
+            <p>Děkujeme za trpělivost, návody budou brzy k dispozici!</p>
+        </details>
+
+        <details>
+            <summary aria-label="Rozbalovací pole: Otevřený MyoBox a spolupráce">🧑‍💻 Otevřený MyoBox a spolupráce</summary>
+            <p>MyoBox je open source projekt. To znamená, že je volně dostupný k použití, úpravám a sdílení. Mým cílem je pomoci ostatním uživatelům efektivně spravovat jejich potřeby.</p>
+            <p>Je možné, že v budoucnu přibydou další aplikace. Pokud ano, budou s vámi sdíleny a bude poskytnut podrobný návod, jak si je přidat do dashboardu. Kdybyste i vy vytvořili nějakou aplikaci, tak ji sdílejte s ostatními, ať si každý může rozšířit svoji sbírku.</p>
+            <p>Vaše návrhy na vylepšení, připomínky či konstruktivní kritika jsou velmi vítány. Neváhejte mě kontaktovat, pokud máte dotazy nebo nápady, jak MyoBox dále zlepšit.</p>
+        </details>
+
+        <details>
+            <summary aria-label="Rozbalovací pole: Kontakt">📬 Kontakt</summary>
+            <p>Autor: Jan Šimek</p>
+            <p>E-mail: <a href="mailto:Simek.jan1@gmail.com">Simek.jan1@gmail.com</a></p>
+            <p>Děkuji za váš zájem o MyoBox!</p>
+        </details>
+
+        <details>
+            <summary aria-label="Rozbalovací pole: Licenční podmínky">📄 Licenční podmínky</summary>
+            <pre class="license">
+APACHE LICENCE
+Verze 2.0, leden 2004
+http://www.apache.org/licenses/
+
+PODMÍNKY PRO POUŽÍVÁNÍ, REPRODUKCI A DISTRIBUCI
+
+1. Definice.
+„Licence“ znamená podmínky použití, reprodukce a distribuce, jak jsou popsány v této licenci.
+„Poskytovatel licence“ je držitel autorských práv nebo osoba, která je oprávněna udělit tuto licenci.
+„Právnická osoba“ znamená organizaci a všechny organizace, které ji ovládají, jsou jí ovládány nebo jsou pod společnou kontrolou.
+„Vy“ nebo „Váš“ znamená každou osobu, která uplatňuje oprávnění daná touto licencí.
+„Zdrojová forma“ znamená formu díla, ve které je možné provádět úpravy.
+„Objektová forma“ znamená formu díla převedenou ze zdrojové formy (například zkompilovaný kód).
+„Dílo“ znamená dílo chráněné autorským právem, které je poskytováno podle této licence.
+„Odvozené dílo“ znamená jakékoli dílo založené na původním Díle, které obsahuje úpravy, anotace apod.
+„Příspěvek“ znamená každé autorské dílo, které bylo poskytnuto Poskytovateli licence pro začlenění do Díla.
+„Přispěvatel“ znamená Poskytovatele licence a každého, kdo poskytl Příspěvek.
+
+2. Udělení autorských práv.
+Každý Přispěvatel uděluje Vám neodvolatelnou licenci k užívání, kopírování, upravování, distribuování a sublicencování Díla i Odvozených děl v jakékoli formě.
+
+3. Udělení patentových práv.
+Každý Přispěvatel uděluje Vám neodvolatelnou licenci k používání patentovaných částí jeho Příspěvků, pokud jsou nutné pro využití Díla nebo Odvozeného díla.
+
+4. Redistribuce.
+Při distribuci musíte:
+(a) Přiložit kopii této licence;
+(b) Uvést, že jste provedli změny (pokud nějaké);
+(c) Zachovat veškerá oznámení o autorských právech a licencích;
+(d) Pokud existuje soubor NOTICE, přiložit ho.
+
+5. Příspěvky.
+Jakýkoli příspěvek poskytnutý pro zařazení do Díla podléhá této licenci, pokud není výslovně uvedeno jinak.
+
+6. Ochranné známky.
+Licence neuděluje práva k ochranným známkám a jménům.
+
+7. Zřeknutí se záruk.
+Dílo je poskytováno „TAK, JAK JE“, bez jakýchkoli záruk. Používáte ho na vlastní riziko.
+
+8. Omezení odpovědnosti.
+Žádný Přispěvatel nenese odpovědnost za jakékoli škody vyplývající z používání Díla.
+
+9. Přijetí dodatečné odpovědnosti.
+Můžete přijmout dodatečnou odpovědnost při distribuci, ale jen na vlastní účet a odpovědnost.
+
+PŘÍLOHA: Jak aplikovat licenci Apache na vaše dílo.
+
+Připojte následující prohlášení:
+Copyright [rok] [vaše jméno]
+
+Tento dílo je licencováno pod Apache License, verze 2.0;
+Licence je dostupná na: http://www.apache.org/licenses/LICENSE-2.0
+
+Pokud zákon nevyžaduje jinak, je dílo poskytováno „TAK, JAK JE“,
+bez jakýchkoli záruk nebo podmínek.
+            </pre>
+        </details>
+
+        <a href="../../../index.html" class="back-link">Zpět na Dashboard</a>
+    </div>
+</body>
+</html>

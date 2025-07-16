@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2048 pro zrakově postižené</title>
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,400,800" rel="stylesheet">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tone.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <style>
+        /* Custom CSS pro hru 2048 s tmavým a kontrastním designem */
+        body {
+            background-color: #1a1a1a; /* Tmavé pozadí */
+            overflow: hidden;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            color: #e0e0e0; /* Světlý text */
+            font-family: 'Nunito', sans-serif;
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 550px; /* Omezení šířky pro lepší čitelnost */
+            width: 95%; /* Responzivní šířka */
+            padding: 1rem;
+            box-shadow: 0px 0px 15px rgba(0,0,0,0.7);
+            border-radius: 10px;
+            background-color: #2c2c2c; /* Tmavší pozadí pro kontejner hry */
+        }
+
+        .head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 1rem;
+            padding: 0 1rem;
+        }
+
+        .game-title {
+            font-size: clamp(2.5rem, 8vw, 4rem); /* Responzivní velikost nadpisu */
+            font-weight: 800;
+            color: #f0f0f0;
+            display: flex;
+            align-items: center;
+        }
+
+        .score {
+            background-color: #444;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            text-align: center;
+            font-size: clamp(1rem, 3vw, 1.5rem);
+            font-weight: 400;
+            color: #ccc;
+            min-width: 100px; /* Minimální šířka pro skóre */
+        }
+
+        #value {
+            font-size: clamp(1.5rem, 5vw, 2.5rem);
+            font-weight: 800;
+            color: #fff;
+        }
+
+        .info-button, .reset-button, .save-button, .load-button, .mode-button {
+            width: auto; /* Auto šířka pro text */
+            min-width: 45px; /* Minimální šířka */
+            height: 45px;
+            border-radius: 22.5px; /* Polovina výšky pro pilulkový tvar */
+            font-weight: 800;
+            cursor: pointer;
+            border: none;
+            background-color: #6a5acd; /* Fialová barva */
+            color: #fff;
+            font-size: 1.2rem; /* Menší písmo pro text v tlačítku */
+            padding: 0 15px; /* Odsazení pro text */
+            margin-left: 1rem;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Speciální styling pro reset a info tlačítka, která jsou jen ikony */
+        .info-button.icon-button, .reset-button.icon-button {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            padding: 0;
+            font-size: 1.5rem; /* Větší písmo pro ikony */
+        }
+
+
+        .info-button:hover, .reset-button:hover, .save-button:hover, .load-button:hover, .mode-button:hover {
+            background-color: #5a4ac0;
+            transform: translateY(-2px);
+        }
+
+        .info-button:active, .reset-button:active, .save-button:active, .load-button:active, .mode-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .description {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: #333;
+            color: #f0f0f0;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.7);
+            text-align: center;
+            visibility: hidden;
+            opacity: 0;
+            font-size: 1rem;
+            transition: all 0.3s ease-in-out;
+            z-index: 1000;
+            width: 80%;
+            max-width: 400px;
+            line-height: 1.5;
+        }
+
+        .description.show {
+            visibility: visible;
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .field-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 100%; /* Pro udržení poměru stran 1:1 */
+            background-color: #444; /* Tmavší pozadí pro pole */
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: inset 0 0 8px rgba(0,0,0,0.5);
+        }
+
+        .grid, .field {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: 8px; /* Mezery mezi buňkami */
+            padding: 8px; /* Vnitřní odsazení */
+            box-sizing: border-box;
+        }
+
+        .grid-cell {
+            background-color: #555; /* Tmavší buňky mřížky */
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(1.5rem, 5vw, 2.5rem);
+            color: #aaa;
+            font-weight: 200;
+            outline: none; /* Skryje výchozí outline */
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.3);
+            transition: background-color 0.1s ease-in-out;
+        }
+
+        .grid-cell:focus {
+            outline: 3px solid #8a2be2; /* Fialový rámeček pro fokus */
+            outline-offset: -3px;
+        }
+
+        .tile {
+            position: absolute; /* Dlaždice se budou absolutně pozicovat */
+            width: calc(25% - 8px); /* Šířka dlaždice s ohledem na mezery */
+            height: calc(25% - 8px); /* Výška dlaždice s ohledem na mezery */
+            background-color: #eee;
+            border-radius: 5px;
+            font-weight: 800;
+            color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(1.5rem, 6vw, 3rem);
+            transition: transform 0.15s ease-out, background-color 0.15s ease-out, color 0.15s ease-out;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+        }
+
+        /* Barvy dlaždic pro vysoký kontrast (tmavé pozadí, bílé písmo) */
+        .tile[data-value="2"] { background: #3a005c; color: #fff; } /* Velmi tmavě fialová */
+        .tile[data-value="4"] { background: #4b0082; color: #fff; } /* Tmavě fialová (Indigo) */
+        .tile[data-value="8"] { background: #6a009c; color: #fff; } /* Středně tmavě fialová */
+        .tile[data-value="16"] { background: #7b00b0; color: #fff; } /* Světlejší fialová */
+        .tile[data-value="32"] { background: #8c00c4; color: #fff; } /* Jasnější fialová */
+        .tile[data-value="64"] { background: #9d00d8; color: #fff; } /* Intenzivní fialová */
+        .tile[data-value="128"] { background: #00004d; color: #fff; font-size: clamp(1.3rem, 5vw, 2.5rem); } /* Velmi tmavě modrá */
+        .tile[data-value="256"] { background: #000066; color: #fff; font-size: clamp(1.3rem, 5vw, 2.5rem); } /* Tmavě modrá */
+        .tile[data-value="512"] { background: #000080; color: #fff; font-size: clamp(1.3rem, 5vw, 2.5rem); } /* Středně tmavě modrá */
+        .tile[data-value="1024"] { background: #000099; color: #fff; font-size: clamp(1rem, 4vw, 2rem); } /* Světlejší modrá */
+        .tile[data-value="2048"] { background: #0000b3; color: #fff; font-size: clamp(1rem, 4vw, 2rem); } /* Jasně modrá (výhra) */
+        .tile[data-value="4096"] { background: #0000cc; color: #fff; font-size: clamp(1rem, 4vw, 2rem); } /* Středně modrá */
+        .tile[data-value="8192"] { background: #0000e6; color: #fff; font-size: clamp(1rem, 4vw, 2rem); } /* Světlejší modrá */
+
+        /* Stavové zprávy */
+        .game-status {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+            font-size: clamp(2rem, 8vw, 4rem);
+            font-weight: 800;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+
+        .game-status.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .game-status.won {
+            background-color: rgba(49, 117, 56, 0.9); /* Zelená pro výhru */
+        }
+
+        .game-status.lose {
+            background-color: rgba(125, 60, 52, 0.9); /* Červená pro prohru */
+        }
+
+        /* Skrytá oblast pro čtečku obrazovky */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+
+        /* Swipe animace */
+        .swipe-indicator {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background-color: rgba(138, 43, 226, 0.7); /* Fialová s průhledností */
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            opacity: 0;
+            transform: scale(0);
+            transition: all 0.3s ease-out;
+            z-index: 150; /* Nad dlaždicemi, pod game-status */
+        }
+
+        .swipe-indicator.show {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* Styl pro tlačítko Zpět na Dashboard */
+        .back-to-dashboard-link {
+            display: block; /* Aby zabíralo celou šířku a bylo na samostatném řádku */
+            width: fit-content; /* Aby se šířka přizpůsobila obsahu */
+            background-color: #4a4a4a;
+            color: #fff;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            font-weight: bold;
+            margin-bottom: 1.5rem; /* Mezera pod tlačítkem */
+            transition: background-color 0.2s ease;
+        }
+        .back-to-dashboard-link:hover {
+            background-color: #6a6a6a;
+        }
+        .back-to-dashboard-link:focus {
+            outline: 2px solid #facc15;
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Odkaz zpět na Dashboard -->
+    <a href="../../../index.html" class="back-to-dashboard-link" aria-label="Zpět na hlavní dashboard JSM">← Zpět na Dashboard</a>
+
+    <div class="game-container">
+        <div class="head">
+            <div class="game-title">2048
+                <button class="info-button icon-button" onClick='info()' aria-label="Informace o hře">i</button>
+                <button id="repeat" class="reset-button icon-button" onClick='reset()' aria-label="Restartovat hru">↻</button>
+            </div>
+            <div class="score" role="status" aria-live="polite" aria-atomic="true">Skóre<br/><span id="value">0</span></div>
+        </div>
+
+        <!-- Nový návod k ovládání -->
+        <p class="text-white text-sm mb-4">
+            Hru ovládáte šipkami nebo přejetím prstem (swipe). Pro přečtení stavu desky ve Výřečném režimu stiskněte 'B'.
+        </p>
+
+        <div class="description" id="description" role="dialog" aria-modal="true" aria-labelledby="description-title">
+            <h2 id="description-title" class="sr-only">Jak hrát 2048</h2>
+            <p><strong>Jak hrát:</strong><br/><br/>
+            Použijte šipky na klávesnici nebo přejeďte prstem po obrazovce pro posun dlaždic. <br/>
+            Dvě dlaždice se stejnou hodnotou se mohou spojit do jedné s dvojnásobnou hodnotou. Cílem je získat dlaždici s hodnotou 2048.<br/><br/>
+            Skóre je součet všech spojených dlaždic.<br><br/>
+            <span>_______________________________</span><br/><br/>
+            Vytvořil Fabian Richter 01/2017. Upraveno pro přístupnost AI asistentem.</p>
+            <button class="info-button" onClick='info()' aria-label="Zavřít informace">Zavřít</button>
+        </div>
+
+        <div class="field-container">
+            <div class="grid" role="grid" aria-label="Herní pole 2048">
+                <!-- Buňky mřížky se generují dynamicky pomocí JS -->
+            </div>
+            <!-- Swipe vizuální indikátor -->
+            <div id="swipeIndicator" class="swipe-indicator"></div>
+        </div>
+        
+        <div class="flex mt-4 space-x-4">
+            <button class="save-button" onClick='saveGame()' aria-label="Uložit hru">Uložit hru</button>
+            <label for="loadFileInput" class="load-button cursor-pointer" tabindex="0" role="button" aria-label="Načíst hru">Načíst hru</label>
+            <input type="file" id="loadFileInput" accept=".json" class="sr-only" onchange="loadGame(event)">
+            <button id="modeToggle" class="mode-button" onClick='toggleMode()' aria-label="Přepnout režim: Normální nebo Výřečný">Režim: Normální</button>
+        </div>
+    </div>
+
+    <!-- Oblast pro dynamické oznámení čtečce obrazovky -->
+    <div id="game-announcer" class="sr-only" aria-live="assertive" aria-atomic="true"></div>
+
+    <!-- Stavové zprávy (výhra/prohra) -->
+    <div id="game-status" class="game-status" role="alert" aria-live="assertive"></div>
+
+    <script>
+        // Deklarace globálních proměnných
+        let board = []; // 2D pole pro uchování stavu herního pole
+        let scoreValue = 0;
+        let gameMoved = false; // Flag pro sledování, zda se dlaždice pohnuly
+        let touchStartX = 0;
+        let touchStartY = 0;
+        const gridSize = 4; // Velikost mřížky 4x4
+        let audioContextStarted = false; // Nový flag pro sledování stavu audio kontextu
+        let currentMode = 'normal'; // 'normal' nebo 'verbose'
+
+        // Tone.js syntezátory pro zvukovou odezvu
+        const mergeSynth = new Tone.PolySynth(Tone.Synth, {
+            envelope: {
+                attack: 0.005,
+                decay: 0.1,
+                sustain: 0.05,
+                release: 0.1
+            },
+            oscillator: {
+                type: "sine"
+            }
+        }).toDestination();
+
+        const newTileSynth = new Tone.Synth({
+            oscillator: { type: "triangle" },
+            envelope: { attack: 0.01, decay: 0.05, sustain: 0.01, release: 0.05 }
+        }).toDestination();
+
+        const invalidMoveSynth = new Tone.MembraneSynth({
+            pitchDecay: 0.05,
+            octaves: 8,
+            envelope: {
+                attack: 0.001,
+                decay: 0.4,
+                sustain: 0.01,
+                release: 1.4,
+            },
+        }).toDestination();
+
+        const winSynth = new Tone.Synth({
+            oscillator: { type: "sawtooth" },
+            envelope: { attack: 0.05, decay: 0.5, sustain: 0.1, release: 1 }
+        }).toDestination();
+
+        const loseSynth = new Tone.NoiseSynth({
+            envelope: { attack: 0.005, decay: 0.1, sustain: 0, release: 0.1 }
+        }).toDestination();
+
+        // Nový syntezátor pro jemný zvuk pohybu dlaždic ve verbose režimu
+        const moveSynth = new Tone.Synth({
+            oscillator: { type: "square" },
+            envelope: { attack: 0.001, decay: 0.02, sustain: 0, release: 0.05 }
+        }).toDestination();
+
+
+        // Frekvence pro spojování dlaždic (vyšší hodnota = vyšší tón)
+        const mergeFrequencies = {
+            2: 261.63, // C4
+            4: 293.66, // D4
+            8: 329.63, // E4
+            16: 349.23, // F4
+            32: 392.00, // G4
+            64: 440.00, // A4
+            128: 493.88, // B4
+            256: 523.25, // C5
+            512: 587.33, // D5
+            1024: 659.25, // E5
+            2048: 698.46, // F5 (Výhra!)
+        };
+
+        // DOM elementy
+        const gameAnnouncer = document.getElementById('game-announcer');
+        const scoreSpan = document.getElementById('value');
+        const gameStatusDiv = document.getElementById('game-status');
+        const descriptionDiv = document.getElementById('description');
+        const gridElement = document.querySelector('.grid');
+        const modeToggleButton = document.getElementById('modeToggle');
+        const swipeIndicator = document.getElementById('swipeIndicator');
+
+        // Inicializace hry po načtení okna
+        window.onload = function() {
+            initializeGame();
+            addEventListeners();
+            updateModeButtonText(); // Nastaví počáteční text tlačítka režimu
+        };
+
+        /**
+         * Inicializuje hru: vytváří mřížku, generuje počáteční dlaždice a nastavuje skóre.
+         */
+        function initializeGame() {
+            buildGridOverlay(); // Vytvoří vizuální mřížku
+            resetBoard(); // Resetuje logické pole hry
+            cellCreator(2, 0); // Vytvoří dvě počáteční dlaždice
+            updateScore(0); // Nastaví počáteční skóre na 0
+            gameStatusDiv.classList.remove('show', 'won', 'lose'); // Skryje stavové zprávy
+            announceGameUpdate("Hra 2048 začala. Použijte šipky nebo přejeďte prstem pro pohyb dlaždic.");
+        }
+
+        /**
+         * Přidává posluchače událostí pro klávesnici a dotyky.
+         */
+        function addEventListeners() {
+            document.addEventListener('keydown', handleKeyPress);
+            // Odstranění passive: true, aby bylo možné volat preventDefault()
+            gridElement.addEventListener('touchstart', handleTouchStart, { passive: false }); 
+            gridElement.addEventListener('touchend', handleTouchEnd);
+        }
+
+        /**
+         * Vytvoří vizuální mřížku pro hru a přidá ARIA atributy.
+         */
+        function buildGridOverlay() {
+            gridElement.innerHTML = ''; // Vyčistí stávající mřížku
+            for (let r = 0; r < gridSize; r++) {
+                for (let c = 0; c < gridSize; c++) {
+                    const cell = document.createElement('DIV');
+                    cell.classList.add('grid-cell');
+                    cell.id = `cell-${r}-${c}`; // ID ve formátu cell-řádek-sloupec
+                    cell.setAttribute('role', 'gridcell');
+                    cell.setAttribute('aria-label', `Řádek ${r + 1}, Sloupec ${c + 1}`);
+                    cell.setAttribute('tabindex', '0'); // Pro fokusovatelnost
+                    // Oznámení obsahu buňky při fokusu pouze ve verbose režimu
+                    cell.addEventListener('focus', () => {
+                        if (currentMode === 'verbose') {
+                            announceCellContent(r, c);
+                        }
+                    });
+                    gridElement.appendChild(cell);
+                }
+            }
+        }
+
+        /**
+         * Resetuje logické pole hry (board) na prázdné hodnoty.
+         */
+        function resetBoard() {
+            board = Array(gridSize).fill(0).map(() => Array(gridSize).fill(0));
+        }
+
+        /**
+         * Vytvoří náhodnou dlaždici (2 nebo 4) na prázdném místě.
+         * @param {number} count Počet dlaždic k vytvoření.
+         * @param {number} delay Zpoždění před zobrazením dlaždice (pro animaci).
+         */
+        function cellCreator(count, delay) {
+            let newTilesInfo = [];
+            for (let i = 0; i < count; i++) {
+                let emptyCells = [];
+                for (let r = 0; r < gridSize; r++) {
+                    for (let c = 0; c < gridSize; c++) {
+                        if (board[r][c] === 0) {
+                            emptyCells.push({ r, c });
+                        }
+                    }
+                }
+
+                if (emptyCells.length > 0) {
+                    const randomIndex = Math.floor(Math.random() * emptyCells.length);
+                    const { r, c } = emptyCells[randomIndex];
+                    const newValue = Math.random() < 0.9 ? 2 : 4; // 90% šance na 2, 10% na 4
+                    board[r][c] = newValue;
+                    newTilesInfo.push({ r, c, value: newValue });
+                }
+            }
+            renderBoard(); // Vykreslí aktualizované pole
+            if (newTilesInfo.length > 0) {
+                if (audioContextStarted) {
+                    newTileSynth.triggerAttackRelease("C6", "8n");
+                }
+                if (currentMode === 'verbose') {
+                    const announcement = newTilesInfo.map(tile => `Nová dlaždice ${tile.value} na pozici řádek ${tile.r + 1}, sloupec ${tile.c + 1}.`).join(" ");
+                    announceGameUpdate(announcement);
+                }
+            }
+        }
+
+        /**
+         * Vykreslí stav herního pole (board) do DOM.
+         * Odstraní staré dlaždice a vytvoří nové na správných pozicích.
+         */
+        function renderBoard() {
+            // Odstranit všechny existující dlaždice
+            document.querySelectorAll('.tile').forEach(tile => tile.remove());
+
+            // Vytvořit a umístit nové dlaždice
+            for (let r = 0; r < gridSize; r++) {
+                for (let c = 0; c < gridSize; c++) {
+                    const value = board[r][c];
+                    if (value !== 0) {
+                        const cellElement = document.getElementById(`cell-${r}-${c}`);
+                        const tile = document.createElement('DIV');
+                        tile.classList.add('tile');
+                        tile.setAttribute('data-value', value);
+                        tile.innerHTML = value;
+
+                        // Vypočítat pozici dlaždice na základě pozice buňky
+                        const cellRect = cellElement.getBoundingClientRect();
+                        const gridRect = gridElement.getBoundingClientRect();
+
+                        tile.style.left = `${cellRect.left - gridRect.left}px`;
+                        tile.style.top = `${cellRect.top - gridRect.top}px`;
+                        tile.style.width = `${cellRect.width}px`;
+                        tile.style.height = `${cellRect.height}px`;
+
+                        gridElement.appendChild(tile);
+                    }
+                }
+            }
+        }
+
+        /**
+         * Zpracovává stisknutí klávesy pro pohyb dlaždic nebo interaktivní průzkum.
+         * @param {KeyboardEvent} e Událost klávesnice.
+         */
+        function handleKeyPress(e) {
+            // Spustit audio kontext při první interakci
+            if (!audioContextStarted) {
+                Tone.start();
+                audioContextStarted = true;
+            }
+
+            // Pokud je zobrazeno info okno, ignorujeme pohybové klávesy
+            if (descriptionDiv.classList.contains('show')) {
+                if (e.key === 'Escape') {
+                    info(); // Zavře info okno
+                }
+                return;
+            }
+
+            let direction = '';
+            gameMoved = false; // Resetuje flag pro pohyb
+
+            switch (e.key) {
+                case 'ArrowUp':
+                    direction = 'nahoru';
+                    moveTiles('up');
+                    break;
+                case 'ArrowDown':
+                    direction = 'dolů';
+                    moveTiles('down');
+                    break;
+                case 'ArrowLeft':
+                    direction = 'doleva';
+                    moveTiles('left');
+                    break;
+                case 'ArrowRight':
+                    direction = 'doprava';
+                    moveTiles('right');
+                    break;
+                case 'Tab':
+                    // Ponechá výchozí chování Tab pro fokus
+                    return;
+                case 'Enter':
+                    // Pro interaktivní průzkum, pokud je buňka fokusována
+                    const activeElement = document.activeElement;
+                    if (activeElement && activeElement.classList.contains('grid-cell')) {
+                        const [_, r, c] = activeElement.id.split('-').map(Number);
+                        if (currentMode === 'verbose') {
+                            announceCellContent(r, c);
+                        }
+                    }
+                    return; // Nenechá propadnout dál
+                case 'b': // Nová klávesa pro přečtení stavu desky (pouze ve verbose režimu)
+                case 'B':
+                    if (currentMode === 'verbose') {
+                        announceBoardSummary();
+                    } else {
+                        announceGameUpdate("Tato funkce je dostupná pouze ve Výřečném režimu. Přepněte režim tlačítkem 'Režim'.");
+                    }
+                    return;
+                default:
+                    return; // Ignoruje ostatní klávesy
+            }
+
+            e.preventDefault(); // Zabrání výchozímu chování prohlížeče (např. posouvání stránky)
+
+            if (gameMoved) {
+                if (currentMode === 'verbose') {
+                    moveSynth.triggerAttackRelease("C3", "32n"); // Jemný zvuk pohybu
+                }
+                cellCreator(1, 10); // Vytvoří novou dlaždici po platném tahu
+                checkGameStatus();
+            } else {
+                if (audioContextStarted) {
+                    invalidMoveSynth.triggerAttackRelease("C2", "8n"); // Zvuk pro neplatný tah
+                }
+                announceGameUpdate(`Tah ${direction} nebyl možný.`);
+            }
+        }
+
+        /**
+         * Zpracovává dotykové události pro swipe.
+         * @param {TouchEvent} e Událost dotyku.
+         */
+        function handleTouchStart(e) {
+            // Spustit audio kontext při první interakci
+            if (!audioContextStarted) {
+                Tone.start();
+                audioContextStarted = true;
+            }
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+            // e.preventDefault(); // Není potřeba zde, bude voláno v touchend po detekci swipu
+        }
+
+        function handleTouchEnd(e) {
+            const touchEndX = e.changedTouches[0].clientX;
+            const touchEndY = e.changedTouches[0].clientY;
+
+            const dx = touchEndX - touchStartX;
+            const dy = touchEndY - touchStartY;
+
+            const minSwipeDistance = 50; // Minimální vzdálenost pro detekci swipe
+
+            let direction = '';
+            let swipeDetected = false;
+
+            if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > minSwipeDistance) {
+                // Horizontální swipe
+                swipeDetected = true;
+                if (dx > 0) {
+                    direction = 'right';
+                    handleKeyPress({ key: 'ArrowRight', preventDefault: () => {} });
+                } else {
+                    direction = 'left';
+                    handleKeyPress({ key: 'ArrowLeft', preventDefault: () => {} });
+                }
+            } else if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > minSwipeDistance) {
+                // Vertikální swipe
+                swipeDetected = true;
+                if (dy > 0) {
+                    direction = 'down';
+                    handleKeyPress({ key: 'ArrowDown', preventDefault: () => {} });
+                } else {
+                    direction = 'up';
+                    handleKeyPress({ key: 'ArrowUp', preventDefault: () => {} });
+                }
+            }
+
+            if (swipeDetected) {
+                e.preventDefault(); // Zabrání výchozímu chování prohlížeče (např. posouvání stránky nebo gesta čtečky)
+                if (currentMode === 'verbose') {
+                    showSwipeAnimation(direction);
+                }
+            }
+        }
+
+        /**
+         * Posouvá dlaždice na herním poli.
+         * @param {string} direction Směr posunu ('up', 'down', 'left', 'right').
+         */
+        function moveTiles(direction) {
+            let oldBoard = JSON.parse(JSON.stringify(board)); // Kopie pro porovnání
+            let mergedTilesInfo = []; // Sleduje spojené dlaždice pro oznámení
+
+            // Pomocná funkce pro posun řady/sloupce
+            function slide(row) {
+                let newRow = row.filter(val => val !== 0); // Odstraní nuly
+                let missing = gridSize - newRow.length;
+                let zeros = Array(missing).fill(0);
+
+                if (direction === 'left' || direction === 'up') {
+                    row = newRow.concat(zeros);
+                } else {
+                    row = zeros.concat(newRow);
+                }
+                return row;
+            }
+
+            // Pomocná funkce pro spojení dlaždic
+            function combine(row, r_idx, c_idx_start, isColumn) {
+                if (direction === 'left' || direction === 'up') {
+                    for (let i = 0; i < gridSize - 1; i++) {
+                        if (row[i] !== 0 && row[i] === row[i + 1]) {
+                            row[i] *= 2;
+                            scoreValue += row[i];
+                            
+                            // Uložíme detailní info o sloučení pro verbose režim
+                            const mergedPos = isColumn ? { r: c_idx_start + i, c: r_idx } : { r: r_idx, c: c_idx_start + i };
+                            mergedTilesInfo.push({
+                                value: row[i],
+                                oldVal: row[i] / 2,
+                                pos: mergedPos
+                            });
+
+                            if (audioContextStarted) {
+                                mergeSynth.triggerAttackRelease(mergeFrequencies[row[i]], "8n"); // Zvuk spojení
+                            }
+                            row[i + 1] = 0;
+                            gameMoved = true;
+                        }
+                    }
+                } else { // right or down
+                    for (let i = gridSize - 1; i > 0; i--) {
+                        if (row[i] !== 0 && row[i] === row[i - 1]) {
+                            row[i] *= 2;
+                            scoreValue += row[i];
+
+                            // Uložíme detailní info o sloučení pro verbose režim
+                            const mergedPos = isColumn ? { r: c_idx_start + i, c: r_idx } : { r: r_idx, c: c_idx_start + i };
+                            mergedTilesInfo.push({
+                                value: row[i],
+                                oldVal: row[i] / 2,
+                                pos: mergedPos
+                            });
+
+                            if (audioContextStarted) {
+                                mergeSynth.triggerAttackRelease(mergeFrequencies[row[i]], "8n"); // Zvuk spojení
+                            }
+                            row[i - 1] = 0;
+                            gameMoved = true;
+                        }
+                    }
+                }
+                return row;
+            }
+
+            // Aplikace logiky na celé pole
+            if (direction === 'up' || direction === 'down') {
+                for (let c = 0; c < gridSize; c++) {
+                    let column = [];
+                    for (let r = 0; r < gridSize; r++) {
+                        column.push(board[r][c]);
+                    }
+                    column = slide(column);
+                    column = combine(column, c, 0, true); // Pro sloupce je r_idx = c, c_idx_start = 0, isColumn = true
+                    column = slide(column); // Znovu posunout po spojení
+
+                    for (let r = 0; r < gridSize; r++) {
+                        board[r][c] = column[r];
+                    }
+                }
+            } else { // 'left' or 'right'
+                for (let r = 0; r < gridSize; r++) {
+                    let row = board[r];
+                    row = slide(row);
+                    row = combine(row, r, 0, false); // Pro řádky je r_idx = r, c_idx_start = 0, isColumn = false
+                    row = slide(row); // Znovu posunout po spojení
+                    board[r] = row;
+                }
+            }
+
+            // Kontrola, zda se pole změnilo
+            if (JSON.stringify(oldBoard) !== JSON.stringify(board)) {
+                gameMoved = true;
+                updateScore(scoreValue);
+                renderBoard(); // Vykreslí aktualizované pole
+
+                // Generování sumarizace pro čtečku (pouze ve verbose režimu)
+                if (currentMode === 'verbose') {
+                    let announcement = `Posunuto ${direction}. `;
+                    if (mergedTilesInfo.length > 0) {
+                        const mergedInfo = mergedTilesInfo.map(m => `Spojeny dlaždice ${m.oldVal} a ${m.oldVal} na ${m.value} na pozici řádek ${m.pos.r + 1}, sloupec ${m.pos.c + 1}.`).join(" ");
+                        announcement += mergedInfo + " ";
+                    }
+                    announceGameUpdate(announcement.trim());
+                }
+            }
+        }
+
+        /**
+         * Aktualizuje zobrazené skóre.
+         * @param {number} newScore Nová hodnota skóre.
+         */
+        function updateScore(newScore) {
+            scoreSpan.textContent = newScore;
+            // Oznámení skóre čtečce, ale ne po každém tahu, aby to nebylo zahlcující
+            // Lze oznámit při významných událostech nebo na vyžádání
+        }
+
+        /**
+         * Kontroluje stav hry (výhra, prohra).
+         */
+        function checkGameStatus() {
+            // Kontrola výhry (dosažení 2048)
+            for (let r = 0; r < gridSize; r++) {
+                for (let c = 0; c < gridSize; c++) {
+                    if (board[r][c] === 2048) {
+                        showGameStatus('won');
+                        if (audioContextStarted) {
+                            winSynth.triggerAttackRelease("C5", "2n"); // Zvuk výhry
+                        }
+                        announceGameUpdate("Gratulujeme! Vyhráli jste hru 2048!");
+                        return;
+                    }
+                }
+            }
+
+            // Kontrola prohry (žádné volné buňky a žádné možné tahy)
+            let hasEmptyCells = false;
+            for (let r = 0; r < gridSize; r++) {
+                for (let c = 0; c < gridSize; c++) {
+                    if (board[r][c] === 0) {
+                        hasEmptyCells = true;
+                        break;
+                    }
+                }
+                if (hasEmptyCells) break;
+            }
+
+            if (!hasEmptyCells) {
+                let canMove = false;
+                // Kontrola možných horizontálních tahů
+                for (let r = 0; r < gridSize; r++) {
+                    for (let c = 0; c < gridSize - 1; c++) {
+                        if (board[r][c] === board[r][c + 1]) {
+                            canMove = true;
+                            break;
+                        }
+                    }
+                    if (canMove) break;
+                }
+                // Kontrola možných vertikálních tahů
+                if (!canMove) {
+                    for (let c = 0; c < gridSize; c++) {
+                        for (let r = 0; r < gridSize - 1; r++) {
+                            if (board[r][c] === board[r + 1][c]) {
+                                canMove = true;
+                                break;
+                            }
+                        }
+                        if (canMove) break;
+                    }
+                }
+
+                if (!canMove) {
+                    showGameStatus('lose');
+                    if (audioContextStarted) {
+                        loseSynth.triggerAttackRelease("8n"); // Zvuk prohry
+                    }
+                    announceGameUpdate("Konec hry! Už nemáte žádné další tahy. Zkuste to znovu!");
+                }
+            }
+        }
+
+        /**
+         * Zobrazí stavovou zprávu (výhra/prohra).
+         * @param {string} status Typ stavu ('won' nebo 'lose').
+         */
+        function showGameStatus(status) {
+            gameStatusDiv.textContent = status === 'won' ? 'Vyhráli jste!' : 'Konec hry!';
+            gameStatusDiv.classList.add('show', status);
+            // Po 3 sekundách skryjeme zprávu, pokud to není trvalý stav
+            setTimeout(() => {
+                gameStatusDiv.classList.remove('show', status);
+            }, 3000);
+        }
+
+        /**
+         * Oznámí zprávu čtečce obrazovky pomocí aria-live regionu.
+         * @param {string} message Zpráva k oznámení.
+         */
+        function announceGameUpdate(message) {
+            gameAnnouncer.textContent = message;
+        }
+
+        /**
+         * Oznámí obsah buňky, když je fokusována.
+         * @param {number} r Řádek buňky.
+         * @param {number} c Sloupec buňky.
+         */
+        function announceCellContent(r, c) {
+            const value = board[r][c];
+            const content = value === 0 ? "prázdná" : value;
+            announceGameUpdate(`Řádek ${r + 1}, sloupec ${c + 1}: ${content}.`);
+        }
+
+        /**
+         * Přepíná zobrazení informací o hře.
+         */
+        function info() {
+            // Spustit audio kontext při první interakci s info tlačítkem
+            if (!audioContextStarted) {
+                Tone.start();
+                audioContextStarted = true;
+            }
+            descriptionDiv.classList.toggle('show');
+            if (descriptionDiv.classList.contains('show')) {
+                descriptionDiv.focus(); // Přesune fokus na dialog
+                announceGameUpdate("Informace o hře jsou zobrazeny. Pro zavření stiskněte Escape nebo tlačítko Zavřít.");
+            } else {
+                announceGameUpdate("Informace o hře byly zavřeny.");
+                // Vrátí fokus na tlačítko info, pokud je to možné
+                document.querySelector('.info-button').focus();
+            }
+        }
+
+        /**
+         * Restartuje hru.
+         */
+        function reset() {
+            // Spustit audio kontext při první interakci s reset tlačítkem
+            if (!audioContextStarted) {
+                Tone.start();
+                audioContextStarted = true;
+            }
+            initializeGame();
+            announceGameUpdate("Hra byla restartována.");
+        }
+
+        /**
+         * Uloží aktuální stav hry do JSON souboru a stáhne ho.
+         */
+        function saveGame() {
+            if (!audioContextStarted) {
+                Tone.start();
+                audioContextStarted = true;
+            }
+            const gameState = {
+                board: board,
+                score: scoreValue
+            };
+            const jsonString = JSON.stringify(gameState, null, 2); // Pěkně formátovaný JSON
+
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '2048_game_save.json';
+            document.body.appendChild(a); // Přidat do DOM pro kliknutí
+            a.click(); // Spustit stahování
+            document.body.removeChild(a); // Odstranit element
+            URL.revokeObjectURL(url); // Uvolnit URL objekt
+
+            announceGameUpdate("Hra byla uložena do souboru 2048_game_save.json.");
+        }
+
+        /**
+         * Načte stav hry z vybraného JSON souboru.
+         * @param {Event} event Událost změny souboru.
+         */
+        function loadGame(event) {
+            if (!audioContextStarted) {
+                Tone.start();
+                audioContextStarted = true;
+            }
+            const file = event.target.files[0];
+            if (!file) {
+                announceGameUpdate("Žádný soubor nebyl vybrán pro načtení.");
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const loadedState = JSON.parse(e.target.result);
+                    if (loadedState.board && Array.isArray(loadedState.board) && loadedState.board.length === gridSize &&
+                        loadedState.board.every(row => Array.isArray(row) && row.length === gridSize) &&
+                        typeof loadedState.score === 'number') {
+                        
+                        board = loadedState.board;
+                        scoreValue = loadedState.score;
+                        renderBoard();
+                        updateScore(scoreValue);
+                        announceGameUpdate("Hra byla úspěšně načtena.");
+                        gameStatusDiv.classList.remove('show', 'won', 'lose'); // Skryje stavové zprávy
+                    } else {
+                        announceGameUpdate("Chyba: Vybraný soubor není platný soubor pro uložení hry 2048.");
+                    }
+                } catch (error) {
+                    console.error("Chyba při načítání souboru:", error);
+                    announceGameUpdate("Chyba při načítání souboru. Ujistěte se, že je to platný JSON soubor s uloženou hrou.");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        /**
+         * Přepíná mezi normálním a výřečným režimem.
+         */
+        function toggleMode() {
+            currentMode = currentMode === 'normal' ? 'verbose' : 'normal';
+            updateModeButtonText();
+            announceGameUpdate(`Režim přepnut na ${currentMode === 'normal' ? 'Normální' : 'Výřečný'}.`);
+        }
+
+        /**
+         * Aktualizuje text na tlačítku pro přepínání režimů.
+         */
+        function updateModeButtonText() {
+            modeToggleButton.textContent = `Režim: ${currentMode === 'normal' ? 'Normální' : 'Výřečný'}`;
+            modeToggleButton.setAttribute('aria-label', `Přepnout režim na ${currentMode === 'normal' ? 'Výřečný' : 'Normální'}`);
+        }
+
+        /**
+         * Oznámí souhrn stavu desky pro čtečku obrazovky.
+         */
+        function announceBoardSummary() {
+            let emptyCellsCount = 0;
+            let highestValue = 0;
+            let highestValuePos = { r: -1, c: -1 };
+            let tilesCount = 0;
+            let totalValue = 0;
+
+            for (let r = 0; r < gridSize; r++) {
+                for (let c = 0; c < gridSize; c++) {
+                    const value = board[r][c];
+                    if (value === 0) {
+                        emptyCellsCount++;
+                    } else {
+                        tilesCount++;
+                        totalValue += value;
+                        if (value > highestValue) {
+                            highestValue = value;
+                            highestValuePos = { r, c };
+                        }
+                    }
+                }
+            }
+
+            let summary = `Aktuální skóre je ${scoreValue}. `;
+            if (highestValue > 0) {
+                summary += `Nejvyšší dlaždice je ${highestValue} na pozici řádek ${highestValuePos.r + 1}, sloupec ${highestValuePos.c + 1}. `;
+            }
+            if (emptyCellsCount > 0) {
+                summary += `Zbývá ${emptyCellsCount} prázdných buněk. `;
+            } else {
+                summary += `Žádné prázdné buňky. `;
+            }
+            announceGameUpdate(summary.trim());
+        }
+
+        /**
+         * Zobrazí vizuální animaci swipu.
+         * @param {string} direction Směr swipu ('up', 'down', 'left', 'right').
+         */
+        function showSwipeAnimation(direction) {
+            // Resetování pozice a opacity
+            swipeIndicator.style.opacity = 0;
+            swipeIndicator.style.transform = 'scale(0)';
+            swipeIndicator.textContent = ''; // Vyčistíme text
+
+            // Nastavení pozice na střed herního pole
+            const gridRect = gridElement.getBoundingClientRect();
+            const indicatorSize = 60; // Shodné s CSS
+            swipeIndicator.style.left = `${(gridRect.width / 2) - (indicatorSize / 2)}px`;
+            swipeIndicator.style.top = `${(gridRect.height / 2) - (indicatorSize / 2)}px`;
+
+            // Nastavení šipky a textu
+            let arrowChar = '';
+            switch (direction) {
+                case 'up': arrowChar = '↑'; break;
+                case 'down': arrowChar = '↓'; break;
+                case 'left': arrowChar = '←'; break;
+                case 'right': arrowChar = '→'; break;
+            }
+            swipeIndicator.textContent = arrowChar;
+
+            // Zobrazení s animací
+            swipeIndicator.classList.add('show');
+
+            // Skrytí po krátké době
+            setTimeout(() => {
+                swipeIndicator.classList.remove('show');
+            }, 500); // Zobrazí se na 0.5 sekundy
+        }
+
+    </script>
+</body>
+</html>
